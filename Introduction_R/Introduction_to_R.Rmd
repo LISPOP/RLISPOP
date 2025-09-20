@@ -16,7 +16,7 @@ library(knitr)
 library(here)
 ```
 
-```{r remove-df-function, echo=F, results='hide', purl=F}
+```{r remove-df-function, echo=F, eval=F,results='hide', purl=F}
 df<-NULL
 df
 ```
@@ -75,13 +75,15 @@ and division....
 
 An essential next step is learning to *assign* the results of commands to certain short-hand names or objects. Our above mathematical operations have been conducted, but the results of our mathematical operations have been dissipated into the ether! They are gone!
 
-However, we can save them by assigning the results to another short-hand object with the `<`
+However, we can save them by assigning the results to another short-hand object with the `<-` character.
 
 ```{r assign}
 #Store the results of 1+2 in `a`
 a<-1+2
 
 ```
+
+It can be a bit hard to think of this, but the way I think about it as the sentence: `a` gets the results of `1+2`. 
 
 Look up in the right-hand corner. Now, you'll see the letter `a` and a `3` next to it. This means that, in R's current memory, we have an object called `a` that represents the number `3`.
 
@@ -96,6 +98,15 @@ And now we can even do math with it:
 ```{r assign3}
 a+3
 ```
+
+You can also reverse the assignment operator. Down the line, this becomes important as we will start working with `pipes` and command chains.
+
+This is a bit more logical as in: Store the results of `1+2` in `a`
+```{r assign4}
+1+2->a
+
+```
+
 ## The Script Is Where The Work Is
 
 One of the most important things to get your head around working with a programming language as opposed to a GUI-based piece of software is that the work is done by the script; it's a mini-computer program. The important thing to save is the *script* and not the work environment. 
@@ -154,17 +165,6 @@ include_graphics(path=here("images/source.png"))
 
 That is the destination of where we're headed; but getting there is a much messier and iterative process involving testing, trial and error and fixing. 
 
-## Clearing the workspace
-
-Now remember when I talked about how the *script* is real? Not the workspace?  One consequence of that is that we can, and often do, *clear the contents of the workspace* and start again by running our code. 
-
-You can do that easily with the little broom icon on the top right. 
-
-
-```{r img3, echo=F, out.width='100%', purl=F}
-library(knitr)
-include_graphics("images/clear_objects.png")
-```
 
 
 # Vectors
@@ -211,24 +211,17 @@ housing
 # Class exercise
 
 Let's make some vectors of data relevant to this class. 
+
+Pretend you are in a class of five students. Invent a first name, last name, sex, age and date of birth for each. 
+
 Make a vector each for the first names of students in the class, the last names of students in class, their sex and their date of birth.  Store the vectors in a series of objects named `first_name`, `last_name`, `sex`, `age`, and `dob`
 
 > **PRO-TIP**  
 > Avoid mixing upper and lower case names for vectors and objects until the *end* of your analysis. It makes typing harder than necessary (you need to keep pressing the shift-key to get the upper cap). As well, avoid whitespace wherever you can, sometimes R chokes on whitespace and you need to embed objects names that have white-space in them, but that's extra typing. So, `first_name` is *a lot* better than `First name`. 
 
+I'll start with my own information. Extend each vector with similar data points 
 
-
-```{r make-data}
-#first name
-#last name
-#Sex
-#age
-#date of birth
-
-
-```
-
-```{r make-fake-data, echo=F, purl=F}
+```{r make-fake-data, echo=T, purl=T}
 #first name
 first_name<-c('Simon')
 #last name
@@ -239,8 +232,7 @@ sex<-c('Male')
 age<-c(46)
 #date of birth
 dob<-c('1976-08-14')
-df<-data.frame(first_name, last_name, sex, age, dob)
-df2<-df
+
 ```
 
 # Data Frames
@@ -263,15 +255,18 @@ data.frame(variable1=first_name, variable2=last_name)
 
 So let's go ahead and make a dataframe with all the varibles above that we constructed. Let's assign the data-frame to an object name like `df`. 
 
+
+```{r make-data-frame, echo=T, purl=T}
+df<-data.frame(first_name=first_name,
+               last_name=last_name,
+               dob=dob,age=age, sex=sex)
+```
+
 > **PRO-TIP**  
 > Naming data frames is an art. You will be typing the names of them *a lot*, so something with long letters and a mix of upper and lower case is not a good idea. For example, MylargeData_Set would be a really inefficient name for a data frame. `df` is used *a lot* because it usefully stands for `data frame`. But it also doesn't really tell us what is in the data frame. For more complicated projects, you may end up with two or three data frames that require merging, in which case you may want to keep informative names, e.g. class_names. Another consideration is that you don't want to overwrite existing names of R functions. In this case, we might want to use `names` or `class`, but both of those are R functions. If we save our data frame as those, we lose those functions. Not good! You really cannot go wrong with things like `df` or `dat` or `mydat`. 
 
 
-```{r make-data-frame}
-# Make the data frame of all the class variables here
-# Remember to assign it to a name. 
 
-```
 
 
 ## Accessing variables in a data frame
@@ -352,11 +347,18 @@ rm(df)
 
 Now try to find it again. 
 
-```{r find-df}
+```{r find-df, echo=T, eval=F}
 df
 ```
+You should get a weird output like this:
 
-Now, we actually want that data frame back. So, go back into your script and comment out the command `rm(df)` with a `#` in front of it. Now, execute your code again from the top to the bottom. 
+```{r show-df-function, echo=F}
+include_graphics("images/df_function.png")
+```
+
+Basically this appears because there is a built-in function in R called `df`. And when we removed our data frame `df`, R gave us the original function back. It is a rarely used function, so overwriting it is not a huge deal. 
+
+But, we actually want that data frame back. So, go back into your script and comment out the command `rm(df)` with a `#` in front of it. Now, execute your code again from the top to the bottom. 
 
 ```{r rm3, eval=F}
 #Delete 
@@ -397,7 +399,7 @@ Everything you have been working with up until now has been what is called base 
 
 The functions associated with the `tidyverse ` are stored in a number of separate packages; you can install and load the main ones in this way. 
 
-Rstudio Cloud has the `tidyverse` already installed, so we should not need to install it. Instead, we should just be able to load the library. 
+<!-- Rstudio Cloud has the `tidyverse` already installed, so we should not need to install it. Instead, we should just be able to load the library.  -->
 
 ```{r load-tidyverse}
 #install.packages('tidyverse')
@@ -426,9 +428,6 @@ The `summary()` command is one of the most important commands you'll use and you
 
 Let's do that with our `df` data frame.
 
-```{r results='hide', purl=F, echo=F}
-df<-df2
-```
 You should see something like this.
 
 ```{r summarydf}
