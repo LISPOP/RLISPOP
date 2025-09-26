@@ -14,6 +14,16 @@ toc-location: left
 ---
 
 # What Is The Tidyverse
+If you recall from the `Introduction to R` course, the `tidyverse` is a new "dialect" or "accent" of R. In the same way that Southern US English or Scottish are both still English but sound unique. 
+
+This section goes through some of the major functions of the `tidyverse`, specifically: 
+
+1. `select()` columns
+2. `filter()` rows
+3. `summarise()` groups
+4. `mutate()` columns.
+
+One of the major advantages of the tidyverse is that it uses natural language verbs to describe what it is actually doing. It is much less computer programmy and much more intuitive which is why so many people are using it. 
 
 # Data Import
 
@@ -236,15 +246,17 @@ A few things to remember using `rename()`
 
 ::: {#note-rename.callout}
 Rename:
-- the variable `Prov` to be `Province`
-- `HH_TotInc` to be `Total Income`
-- `HH_EarnInc` to be `Earned Income`
-- `HHType6` to be `Household Type`
+- the variable `Prov` to be `Province`. 
+- `HH_TotInc` to be `Total Income`. 
+- `HH_EarnInc` to be `Earned Income`. 
+- `HHType6` to be `Household Type`. 
+- `TX001` to be `Income Taxes`. 
+- `RP_Educ` to be `Education`. 
+- `HHSize` to be `Household Size`
 - `TX001` to be `Income Taxes`
-- RP_education to be `Education`
-- `Household
   - Remember: If you have spaces in variable names, you must wrap them in ``.
 Note: The sample code below will only work if you get these right!
+
 :::
 
 ```{r}
@@ -584,10 +596,11 @@ shs_subset %>%
   slice(10:100)
 ```
 
-::: {.callout.tip}
+::: {#tip-slice .callout.tip}
 **Use cases for `slice`**
 - Pick the first few rows for inspection.
-- Get rid of a trailing last row of junk or white-space.:::
+- Get rid of a trailing last row of junk or white-space.
+:::
 
 
 # Grouping and Summarizing
@@ -730,8 +743,9 @@ table(shs_subset$Region)
 
 ```
 
-::: {.callout.tip}
-A really key thing about `Recode()` is that it must be `precise`. There is no room for any spelling mistakes whatsoever. `Ablerta` will never become `West`. :::
+::: {#tip-recode .callout.tip}
+A really key thing about `Recode()` is that it must be `precise`. There is no room for any spelling mistakes whatsoever. `Ablerta` will never become `West`. 
+:::
 
 ## Recoding a numeric variable
 
@@ -795,7 +809,7 @@ levels(shs_subset$Income3)
 
 ```
 
-# Recoding with `case_when()`- An Alternative Method
+## Recoding with `case_when()`- An Alternative Method
 
 There is an alternative way to recode variables, namely, using `case_when()`. You can think about this function as, *when one thing is the case, do this other thing*. 
 
@@ -848,7 +862,6 @@ shs_subset %>%
 ```
 
 
-# Note that 
 After completing something like this, it's really a good idea to check the results. Maybe with a `View()`
 ```{r }
 #| label: view-class

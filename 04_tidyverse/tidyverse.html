@@ -99,6 +99,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#slicing-as-a-form-of-filtering" id="toc-slicing-as-a-form-of-filtering" class="nav-link" data-scroll-target="#slicing-as-a-form-of-filtering">Slicing as a form of filtering</a></li>
   </ul></li>
   </ul></li>
+  <li><a href="#grouping-and-summarizing" id="toc-grouping-and-summarizing" class="nav-link" data-scroll-target="#grouping-and-summarizing">Grouping and Summarizing</a></li>
+  <li><a href="#mutating-columns" id="toc-mutating-columns" class="nav-link" data-scroll-target="#mutating-columns">Mutating Columns</a>
+  <ul class="collapse">
+  <li><a href="#recoding-a-categorical-variable" id="toc-recoding-a-categorical-variable" class="nav-link" data-scroll-target="#recoding-a-categorical-variable">Recoding a categorical variable</a></li>
+  <li><a href="#recoding-a-numeric-variable" id="toc-recoding-a-numeric-variable" class="nav-link" data-scroll-target="#recoding-a-numeric-variable">Recoding a numeric variable</a></li>
+  <li><a href="#recoding-with-case_when--an-alternative-method" id="toc-recoding-with-case_when--an-alternative-method" class="nav-link" data-scroll-target="#recoding-with-case_when--an-alternative-method">Recoding with <code>case_when()</code>- An Alternative Method</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -133,6 +140,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="what-is-the-tidyverse" class="level1">
 <h1>What Is The Tidyverse</h1>
+<p>If you recall from the <code>Introduction to R</code> course, the <code>tidyverse</code> is a new “dialect” or “accent” of R. In the same way that Southern US English or Scottish are both still English but sound unique.</p>
+<p>This section goes through some of the major functions of the <code>tidyverse</code>, specifically:</p>
+<ol type="1">
+<li><code>select()</code> columns</li>
+<li><code>filter()</code> rows</li>
+<li><code>summarise()</code> groups</li>
+<li><code>mutate()</code> columns.</li>
+</ol>
+<p>One of the major advantages of the tidyverse is that it uses natural language verbs to describe what it is actually doing. It is much less computer programmy and much more intuitive which is why so many people are using it.</p>
 </section>
 <section id="data-import" class="level1">
 <h1>Data Import</h1>
@@ -530,7 +546,7 @@ Note
 <li><strong>Remember to save your data frame if you want to keep the renamed variables</strong></li>
 </ol>
 <div id="note-rename.callout">
-<p>Rename: - the variable <code>Prov</code> to be <code>Province</code> - <code>HH_TotInc</code> to be <code>Total Income</code> - <code>HH_EarnInc</code> to be <code>Earned Income</code> - <code>HHType6</code> to be <code>Household Type</code> - <code>TX001</code> to be <code>Income Taxes</code> - RP_education to be <code>Education</code> - `Household - Remember: If you have spaces in variable names, you must wrap them in ``. Note: The sample code below will only work if you get these right!</p>
+<p>Rename: - the variable <code>Prov</code> to be <code>Province</code>. - <code>HH_TotInc</code> to be <code>Total Income</code>. - <code>HH_EarnInc</code> to be <code>Earned Income</code>. - <code>HHType6</code> to be <code>Household Type</code>. - <code>TX001</code> to be <code>Income Taxes</code>. - <code>RP_Educ</code> to be <code>Education</code>. - <code>HHSize</code> to be <code>Household Size</code> - <code>TX001</code> to be <code>Income Taxes</code> - Remember: If you have spaces in variable names, you must wrap them in ``. Note: The sample code below will only work if you get these right!</p>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>shs_subset<span class="sc">%&gt;%</span> </span>
@@ -4062,7 +4078,7 @@ Figure&nbsp;1
 <p>-Inspect the <code>DwelTyp</code> variable in shs_subset - Use <code>filter</code>, <code>str_detect()</code> and a regular expression to filter only respondents who live in an apartment or a <code>double, row, terrace, etc</code>. - Try to be as compact as possible. Try different regexes. - No need to save it.</p>
 </div>
 <section id="slicing-as-a-form-of-filtering" class="level3">
-<h3 class="anchored">Slicing as a form of filtering</h3>
+<h3 class="anchored" data-anchor-id="slicing-as-a-form-of-filtering">Slicing as a form of filtering</h3>
 <p>Sometimes, rather than filtering rows based on a logical condition, we want to pick and choose specific rows we want in or out, i.e.&nbsp;the 10th row to the 100th row or whatever. <code>Filter</code> is not our friend here, but <code>slice_n()</code> is.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>shs_subset <span class="sc">%&gt;%</span> </span>
@@ -4087,8 +4103,12 @@ Figure&nbsp;1
 #   `Income Taxes` &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<div class="callout.tip">
-<p><strong>Use cases for <code>slice</code></strong> - Pick the first few rows for inspection. - Get rid of a trailing last row of junk or white-space.:::</p>
+<div id="tip-slice" class="callout.tip">
+<p><strong>Use cases for <code>slice</code></strong> - Pick the first few rows for inspection. - Get rid of a trailing last row of junk or white-space.</p>
+</div>
+</section>
+</section>
+</section>
 <section id="grouping-and-summarizing" class="level1">
 <h1>Grouping and Summarizing</h1>
 <p>We have learned how to <code>select()</code> columns and <code>filter()</code> rows. Now we are going to learn to form <code>groups</code> and <code>summarize</code> them. This is the key way that the <code>tidyverse</code> calculates basic statistics by groups.</p>
@@ -4326,8 +4346,10 @@ Territorial capitals                 West
                  565                 4537 </code></pre>
 </div>
 </div>
-<div class="callout.tip">
-<p>A really key thing about <code>Recode()</code> is that it must be <code>precise</code>. There is no room for any spelling mistakes whatsoever. <code>Ablerta</code> will never become <code>West</code>. :::</p>
+<div id="tip-recode" class="callout.tip">
+<p>A really key thing about <code>Recode()</code> is that it must be <code>precise</code>. There is no room for any spelling mistakes whatsoever. <code>Ablerta</code> will never become <code>West</code>.</p>
+</div>
+</section>
 <section id="recoding-a-numeric-variable" class="level2">
 <h2 class="anchored" data-anchor-id="recoding-a-numeric-variable">Recoding a numeric variable</h2>
 <p>You can also use <code>Recode()</code> to recode a numeric variable into larger categories.</p>
@@ -4403,8 +4425,8 @@ $ Income2          &lt;fct&gt; &gt; $150K, &gt; $150K, NA, $50K to $100K, Less t
 </div>
 </div>
 </section>
-<section id="recoding-with-case_when--an-alternative-method" class="level1">
-<h1>Recoding with <code>case_when()</code>- An Alternative Method</h1>
+<section id="recoding-with-case_when--an-alternative-method" class="level2">
+<h2 class="anchored" data-anchor-id="recoding-with-case_when--an-alternative-method">Recoding with <code>case_when()</code>- An Alternative Method</h2>
 <p>There is an alternative way to recode variables, namely, using <code>case_when()</code>. You can think about this function as, <em>when one thing is the case, do this other thing</em>.</p>
 <p>So in this example, we are saying, when the variable <code>Income</code> is less than 50,001, return <code>Less than $50K</code>. But when it is more than 50,000, return <code>More than $50K</code> and save the results back into <code>Income4</code>.</p>
 <div class="cell">
@@ -4471,9 +4493,6 @@ $ Income2          &lt;fct&gt; &gt; $150K, &gt; $150K, NA, $50K to $100K, Less t
 <span id="cb127-18"><a href="#cb127-18" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">Total Income</span><span class="st">`</span><span class="sc">&gt;</span><span class="dv">50000</span> <span class="sc">&amp;</span> Education<span class="sc">==</span><span class="st">"University certificate or diploma"</span><span class="sc">~</span> <span class="st">"poor high education"</span></span>
 <span id="cb127-19"><a href="#cb127-19" aria-hidden="true" tabindex="-1"></a>  ))<span class="ot">-&gt;</span>shs_subset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="note-that" class="level1">
-<h1>Note that</h1>
 <p>After completing something like this, it’s really a good idea to check the results. Maybe with a <code>View()</code></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>shs_subset <span class="sc">%&gt;%</span> </span>
@@ -4502,12 +4521,6 @@ $ Income2          &lt;fct&gt; &gt; $150K, &gt; $150K, NA, $50K to $100K, Less t
 <span id="cb131-10"><a href="#cb131-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Total Income</span><span class="st">`</span><span class="sc">&gt;</span><span class="dv">50001</span> <span class="sc">&amp;</span> <span class="fu">str_detect</span>(Education, <span class="st">"^Certificate|^University"</span>)<span class="sc">~</span> <span class="st">"poor high education"</span>))<span class="ot">-&gt;</span>shs_subset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Notice how that was a heck of a lot less typing.</p>
-</section>
-</div>
-</section>
-</section>
-</div>
-</section>
 </section>
 </section>
 
