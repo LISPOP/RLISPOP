@@ -1,0 +1,883 @@
+---
+title: "The Tidyverse"
+format: html
+author: Simon J. Kiss
+editor: source
+execute: 
+  echo: true
+  warning: false
+  message: false
+  cache: true
+toc: true
+toc-location: left
+
+---
+
+# What Is The Tidyverse
+
+# Data Import
+
+Let's load some libraries.
+
+```{r }
+#| label: output-lines
+#| echo: false
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+``` 
+
+```{r}
+#| label: load-libraries
+#| output.lines: 10
+library(dplyr)
+library(tidyr)
+library(haven)
+library(ggplot2)
+
+
+#alternatively you can load the whole tidyverse package
+#All of the packages above are loaded automatically with the `tidyverse`
+library(tidyverse)
+#These are some other ones. 
+library(here)
+library(haven)
+library(labelled)
+```
+
+Then let's load our dataset.
+
+```{r}
+#| label: data-import
+
+shs<-read_sav(here("data/shs.sav"))
+
+```
+
+As always, it is *very* important to get a sense of what you are dealing with. 
+
+In the tidyverse, `glimpse()` provides nice overview of what we are dealing with. 
+
+```{r}
+#| label: glimpse
+#| eval: true
+#| echo: false
+#| output.lines: 19
+glimpse(shs)
+```
+
+Notice we have `r nrow(shs)` observations (rows) and `r ncol(shs)` variables. So that's fine. It looks like we have a mix `dbl` variables which is a style of `numeric` variable and some `chr+lbl` variables. These are currently stored as `labelled` variables but will have to be converted to `factors` as we go. 
+
+# Selecting Variables
+
+The first thing we are going to learn to do is to `select()` certain columns. There are a few use cases for this:
+
+- A dataset has too many variables that are not of interest, so it is not maneageable
+- A few variables are needed for a particular side analysis
+- A dataset has a column filled with junk or whitespace
+
+So, for example, if we summarize our dataset we find it it very large, i.e. it has a lot of variables. 
+
+In this case, we have 172 variables, too many to look at.
+
+The function `look_for()` from the `labelled` package is exceptionally useful for searching for variables in large datasets.
+
+::: {#note-lookfor .callout-note}
+Try to find the variable names for the variables that measure
+
+- Total Household Income
+- Household Size
+- Income taxes 
+
+Note, you may need to fool around with different cases, keywords and to get a sense of it. Also, some times variable labels can be very long such that if your R output console is quite small, not everything will be printed. Try resizing the R output console.
+
+:::
+
+
+
+```{r}
+#| label: look-for
+look_for(shs, "income") 
+lookfor(shs, "income")
+```
+
+`select()` works in a few ways. 
+
+First, you can just pick the names of the variables you want. 
+
+```{r}
+#| label: select-pick 
+shs %>% 
+  select(TX001, HH_TotInc)
+```
+
+`dplyr` offers a suite of helpers to make more complex selection possible. For example, you can choose a range of variables. 
+
+Here we select the first 10 variables. 
+
+```{r }
+#| label: select-numbers
+shs %>% 
+  select(1:10)
+```
+
+Here, we can select specific variables 
+
+```{r }
+#| label: select-numbers-10
+shs %>% 
+  #Select the 1st, 5th and 7th variable
+  select(c(1,5,7))
+```
+Things get really useful with some other helpers. Note that there are others, but these are the ones that are really useful. 
+
+- `starts_with()`
+- `ends_with()`
+- `contains()`
+
+You can pick variables that start with a string:
+
+```{r }
+#| label: tr
+shs %>% 
+  select(starts_with('TR'))
+```
+
+Or end with a string:
+
+```{r}
+#| label: -C
+shs %>% 
+  select(ends_with('_C'))
+```
+
+R contain a string:
+
+```{r }
+#| label: contains
+shs %>% 
+  select(contains('TR'))
+```
+
+You can also select a range of variables. Let's select the variables from `CaseID` to `ComputerYN`.
+
+```{r}
+#| label: select-range
+#| output.lines: 30
+names(shs)
+shs %>% select(CaseID:InternetYN)
+```
+And, you can combine `select()` methods. So, for example you can select the first variable and anything that contains `TR`.
+
+```{r}
+shs %>% 
+  select(1, contains('TR'))
+```
+
+::: {#note-select .callout-note}
+Write a `select()` command to pick all: 
+
+- household income variables
+- the year a respondent's residence was built
+- the respondent's dwelling type
+- respondent's province of residence
+- the household size
+- the household type (e.g. with or without children)
+- Respondent level of education
+- Household taxes
+- Save it in an object called `shs_subset`
+
+:::
+
+```{r}
+#| label: select-answer
+#| echo: false
+
+shs %>% 
+select(contains("HH"), YearBuilt,DwelTyp, Prov, HHSize, HHType6, RP_Educ, TX001)->shs_subset
+```
+
+### Renaming
+
+`rename()` is a particular version of `select()`. When you use `rename()` you keep all the other variables in the datase, you are just changing the names of a few of the variables. 
+
+#### Use Cases
+
+- Variables are jargonny on import and hard to type and hard to remember, e.g. `CL001` might be renamed to be `clothing`. 
+- Variables are not written to be aesthetically pleasing, e.g. `clothing` might be useful for your analysis, but when it comes time to printing gtraphs and tables, you may want to turn it into `Clothing` . 
+
+
+
+If we spent some time looking at each one and looking at the technical documentaiton, we could find out with a lot of certainly what these are, but we're just practicing how to rename these jargon-y variables. 
+A few things to remember using `rename()`
+
+1. If you want to make a variable name with spaces, you need to enclose it in ``
+2. The syntax is basically `data_frame %>% rename(., new_name=old_name)`
+3. You can also rename by position e.g. `data_frame %>% rename(., new_name=4)` if you wanted to rename the fourth variable in the data frame. 
+3. **Remember to save your data frame if you want to keep the renamed variables**
+
+::: {#note-rename.callout}
+Rename:
+- the variable `Prov` to be `Province`
+- `HH_TotInc` to be `Total Income`
+- `HH_EarnInc` to be `Earned Income`
+- `HHType6` to be `Household Type`
+- `TX001` to be `Income Taxes`
+- RP_education to be `Education`
+- `Household
+  - Remember: If you have spaces in variable names, you must wrap them in ``.
+Note: The sample code below will only work if you get these right!
+:::
+
+```{r}
+#| label: rename-answer
+
+shs_subset%>% 
+  rename(`Total Income`=HH_TotInc, `Earned Income`=HH_EarnInc, `Household Size`=HHSize, `Household Type`=HHType6, Education=`RP_Educ`, `Income Taxes`=TX001)->shs_subset
+```
+
+
+# Filtering rows
+
+If `select()` works on *columns* then `filter()` works on rows. That is to say, it filters out a certain subset of observations meeting some kind of criterion. Here is how it works. 
+
+## Use 
+
+The primary way to use `filter()` is to provide a type of logical condition that a row must meet in order for it to be included. Logical operators in R are the following: 
+
+
+| Operator | Description |
+| ------ | ------------------------ |
+| `<` | Less than |
+| `<=` | Less than or equal to |
+| `>`    | Greater than |
+| `>=`    | Greater than or equal to |
+| `==`    | Exactly equal to |
+| `!=`    | Not equal to |
+| `!x`    | Not x |
+| `x | y`    | x or y |
+| `x & y`    | x and y |
+| `%in%`    | Group membership
+| `isTRUE(x)`    | Test if x is TRUE |
+| `is.na(x)`    | Test if x is NA |
+| `!is.na(x)`    | Test if x is not NA |
+
+
+First,let's check the names of the variables to remind ourselves what we have to work with. 
+
+
+
+
+```{r names-glimpse}
+names(shs_subset)
+glimpse(shs_subset)
+
+```
+
+Remember the issue with importing `.sav` files. They often have variables stored as `labelled` class and these need to be converted to factors. We can do this quickly with `as_factor()`
+
+```{r as-factor}
+shs_subset<-as_factor(shs_subset)
+
+```
+
+Now we can do some filtering.  
+
+## Filtering with numbers
+
+Filtering with numbers is easy. Let's say we want to get rid of people who have no household earned income, so their `Earned Income` is 0. 
+
+```{r workers}
+shs_subset %>% 
+  filter(., `Earned Income`> 0)-> earned_income
+
+```
+
+Notice the number of rows in `earned_income` compared to `shs_subset`. 
+
+```{r nrow}
+nrow(earned_income)
+nrow(shs_subset)
+```
+
+You could also do something like filter a range of values. Let's say we just want to include people between 10,000 and $15,000. 
+I'm not going to save this dataset, We're just going to run this. 
+
+```{r range}
+shs_subset %>% 
+  filter(`Total Income`> 10000& `Total Income` <15000)
+```
+
+We can also provide some formal criteria. So, here we can filter everyone above the average `Household Total Income`.
+
+```{r average}
+shs_subset %>% 
+  filter(`Total Income` > mean(shs_subset$`Total Income`))
+```
+
+## Filtering on factors and characters.
+
+Filtering on factors and character strings is different because you're working with words, not numbers. So, if we look at `Household Size`, we'll see that it is a factor with values of `r levels(shs_subset[,6])`. You can see that by running `levels()` as below.
+
+```{r}
+#| label: levels-factors
+#| output.lines: 10 
+
+
+#Check the levels
+levels(shs_subset$`Household Size`)
+
+#Actually print the variable
+shs_subset$`Household Size`
+```
+
+Note: we can't filter for household sizes of 1, because it's not actually the number 1.
+
+```{r show-error, error=TRUE}
+shs_subset %>% 
+filter(., `Household Size`>1)
+```
+
+We have to use the `==` operator on factors, pretty much every time. 
+
+
+```{r equal}
+shs_subset %>% 
+  filter(., `Household Size`=="4 or more")
+```
+
+We can still combine the multiple criteria:
+
+```{r equal-or}
+shs_subset %>% 
+  filter(., `Household Size`=="4 or more" | `Household Size`==1)
+```
+
+## Filtering missing values
+
+A very common use case is filtering out missing values and I wanted to show you briefly how that works. 
+
+Missing values are a very special type of response. A missing value is *not* 0. When someone says they have \$0 in earned income, they mean they have \$0, i.e. they don't work. If someone declines to answer, then they may very well work, but you don't have the data. In the first case, the response is stored as 0; in the latter case it is stored as `NA`. This a *reserved* string in R, meaning that it can't be used for anything other than missing data. It means `not available`. 
+
+You can test if value is missing with the function `is.na()`. 
+
+This dataset is actually not great because Statistics Canada does such a good job that there are no missing data. 
+
+So I'm actually going to run some code to randomly sprinkle some missing values. 
+
+Please execute this code in your script. 
+
+```{r}
+#| label: make-missing-data
+#This makes a function called insert_missing
+# Function to randomly insert NAs into a dataframe
+insert_missing <- function(df, missing_frac = 0.1) {
+  df_missing <- df
+  total_cells <- prod(dim(df))
+  num_missing <- round(total_cells * missing_frac)
+  
+  for (i in seq_len(num_missing)) {
+    row <- sample(nrow(df), 1)
+    col <- sample(ncol(df), 1)
+    df_missing[row, col] <- NA
+  }
+  
+  return(df_missing)
+}
+#This runs insert_missing on the dataset and saves it in shs_subset
+shs_subset<-insert_missing(shs_subset, missing_frac=0.05)
+#This runs summary()
+summary(shs_subset)
+```
+
+
+`is.na()` returns a `logical` variable that is `TRUE` if a value is missing and `FALSE` if not.
+
+```{r is-na,output.lines: 10}
+
+is.na(shs_subset$`Earned Income`)
+```
+
+If you want to filter out missing values you put `is.na()` as a condition. This will return any rows that have missing values for `Earned Income`. 
+```{r filter-is-na}
+shs_subset %>% 
+  filter(is.na(`Earned Income`)) 
+```
+In the event that you do want to filter *out* missing values, you just supply the `!`. That will return all rows where a variable is *not* missing a value on `Earned Income`.
+
+We could save that dataframe in a new one so we don't overwrite our original. You can compare how many rows are in each to see what the results are. 
+
+```{r flip-filter-is-na}
+shs_subset %>% 
+  filter(!is.na(`Earned Income`))->shs_subset_no_missing
+  nrow(shs_subset)
+  nrow(shs_subset_no_missing)
+```
+
+## Filtering using `str_detect`
+
+One really handy function which we will encounter later in the course is the `str_detect` function. It, uh, detects ....strings.
+
+So, in the example above, we had to precisely specify `4 or more` in order to get it to work. But for some variables, where there are a lot of text heavy values , wouldn't it be nice to just be able to pick out a phrase that appears in some rows and then keep those.  For example, in the variable, `Household Type` we had a lot of different values, specifically: `r levels(shs_subset[,1])`. 
+
+What if we just want to keep those values that have children.  `str_detect` lets us just look for the string `children` and it will keep those. 
+```{r filter-strings,output.lines: 20}
+
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "children"))
+
+```
+
+OK, that won't exactly work, because it's picking out couples with and without children. But we can just narrow string by specifying that. 
+
+```{r filter-strings2}
+#| output.lines: 20
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "with children"))
+```
+
+## Inverting 
+Anytime you get a logical condition to match, you can also invert it (i.e. keep the opposite. ) by putting `!` at the front. 
+
+Let's find all the households with no children. 
+```{r invert-filter-strings}
+#| output.lines: 20
+shs_subset %>% 
+  filter(!str_detect(`Household Type`, "with children"))
+
+```
+
+## Regular Expressions
+
+Here is a moment to introduce something exceptionally powerful in R and computing in general, regular expressions are ``
+text patterns used for searching, matching, validating, and manipulating strings of characters.''
+
+
+```{r}
+#| label: fig-regex
+#| echo: false
+include_graphics(path=here("images/regular_expressions.png"))
+```
+
+When you use the command `str_detect()` the you provide a `string` that you are looking through for a `pattern`. So above, we searched through the string `Household Type` for the pattern `children`. `children` is a regular expression. But sometimes we want to find something a lot more complicated. Regular expressions provide a lot of tools and they are worth learning. 
+
+For example, you can search for a pattern *only* at the beginning of a string. 
+
+
+```{r}
+#| label: regex-caret
+#| output.lines: 20
+#Search the string children anywhere
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "children"))
+
+```
+
+```{r}
+#| label: regex-no-caret
+#| output.lines: 20
+#Search the string children anywhere
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "children"))
+
+```
+Or you can search for the pattern at the *end* of a string. 
+```{r}
+#| label: regex-question
+#| output.lines: 20
+#Search the string children anywhere
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "children"))
+
+```
+
+```{r}
+#| label: regex-question-end
+#| output.lines: 20
+#Search for the pattern with children at the end 
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "children?"))
+```
+
+You can use the `.` character to match any single character in the world.
+This will work because it `.` matches *anything*, including white space before `children`.
+```{r}
+#| label: regex-wildcard-space
+#| output.lines: 20
+#This will return 
+shs_subset %>% 
+  filter(str_detect(`Household Type`, ". children"))
+```
+
+But this will not work because it will only match `Couple` followed by *anything* followed immediately by `children`
+```{r}
+#| label: regex-wildcard
+#| output.lines: 20
+#This will return 
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "Couple.children"))
+```
+You can specify the number of occurrences of a character to match. This will match `Couple` followed by *any three* characters followed by `children`, while the next example will return `Couple` followed by *multiple occurrences up until infinity of any character* followed by `chidren`. 
+```{r}
+#| label: regex-wildcard-3
+#| output.lines: 20
+#This will return 
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "Couple.+children"))
+
+```
+
+Lastly, you can *combine* regular expressions in an *or* statement with `|`. This will match any string *with* or *without* in it. 
+
+```{r}
+#| label: regex-pipe
+#| output.lines: 20
+#This will return 
+shs_subset %>% 
+  filter(str_detect(`Household Type`, "with|without"))
+
+```
+
+
+::: {.callout.tip}
+Regular expressions are exceptionally useful for dealing with *factors*. Sometimes they can have long and wieldy values like ``Newfoundland and Labrador`` or ``Prince Edward Island`` or `Don\'t Know, refused to answer`` 
+Rather than having to type the value of each to get them, you can almost always quickly use a regular expression to capture them. 
+:::
+
+```{r}
+#| label: inspect-dwel-type
+#| output.lines: 20 
+shs_subset$DwelTyp
+```
+
+::: {#note-regex.callout.note}
+-Inspect the `DwelTyp` variable in shs_subset
+- Use `filter`, `str_detect()` and a regular expression to filter only respondents who live in an apartment or a `double, row, terrace, etc`. 
+- Try to be as compact as possible. Try different regexes. 
+- No need to save it. 
+:::
+
+### Slicing as a form of filtering
+
+Sometimes, rather than filtering rows based on a logical condition, we want to pick and choose specific rows we want in or out, i.e. the 10th row to the 100th row or whatever. `Filter` is not our friend here, but `slice_n()` is. 
+
+```{r slice}
+shs_subset %>% 
+  slice(10:100)
+```
+
+::: {.callout.tip}
+**Use cases for `slice`**
+- Pick the first few rows for inspection.
+- Get rid of a trailing last row of junk or white-space.:::
+
+
+# Grouping and Summarizing
+
+We have learned how to `select()` columns and `filter()` rows. Now we are going to learn to form `groups` and `summarize` them. This is the key way that the `tidyverse` calculates basic statistics by groups. 
+
+The first step is to think about what groups you are interesting in knowing about. Groups *must always be factor variables*! Let's say for this example, we want to know what the average household income is by people in the different Canadian provinces. Our groups are provinces and the summary we want to generate of those groups is the total household income. 
+
+Key to this aspect of is the dplyr pipe command. 
+
+```{r}
+#| label: glimpse-for-grouping
+#glimpse
+glimpse(shs_subset)
+```
+Here we are going to work with the `Prov` variable and the `Total Income` variable. 
+
+We form groups in our dataset with the `group_by()` command.
+
+```{r}
+#| label: groups
+shs_subset %>% 
+  group_by(Prov) 
+```
+You can tell that the `group_by()` command has worked when you look at the output of `group_by()`. See in @ref(fig:groups), you actuall are informed that the dataframe `shs_subset` has been `grouped` by `Prov` and there are 9 groups. This survey from Statistics Canada lumps some of the provinces and territories together, that's why. No biggie. 
+
+```{r}
+#| label: fig-groups
+include_graphics("images/groups.png")
+```
+
+The next step is to pick a statistic you want to use to summarize those groups. We talked about calculating the average `Total Income`. For this, we use the `summarise()` command. 
+Note: because we introduced missing values above, we need to specify the `na.rm=T` argument so that R knows to ignore missing values. Let's be sure to save this in a new object called `income_prov`.
+
+```{r}
+#| label: summary-groups
+#| 
+shs_subset %>% 
+  group_by(Prov) %>% 
+  summarise(mean(`Total Income`, na.rm=T))->income_prov
+income_prov
+```
+
+Notice a few things here. First, we have a new dataframe of `nrow(income_prov)` rows and `ncol(income_prov)` cols. So very different dimensions than the `shs_subset` that it came from. The reason is that the original data frame had information on *individual households*. This has information on *provinces*. 
+
+Second, notice the variable names: `Prov` and `mean(`Total Income`, na.rm = T)`. The first variable nam comes from `Prov`, the grouping variable and the second comes from the `summarise()` command, but it is pretty ugly. We can set it to be something specific like this: 
+
+```{r}
+#| label: set-summary-variable-name
+shs_subset %>% 
+  group_by(Prov) %>%
+  #insert a variable name here. 
+  summarise(average=mean(`Total Income`, na.rm=T))->income_prov
+income_prov
+```
+
+::: {#note-mean.callout-note}
+- Modify the code above in different ways to practice assigning different variable names to the mean that is produced. 
+:::
+
+There are a wide variety of statistics that can be caluclated right off the top. For example, the `median()`, the `max()` value, the `min()` value, or the number of cases `n()` or the standard deviation `sd()`. These can be provided sequentially to each summarise and you can specify the variable names for each. 
+
+
+```{r}
+#| label: multiple-summarise
+shs_subset %>% 
+  group_by(Prov) %>%
+  #insert a variable name here. 
+  summarise(mean=mean(`Total Income`, na.rm=T),
+            median=median(`Total Income`, na.rm=T), 
+            SD=sd(`Total Income`, na.rm=T),
+            max=max(`Total Income`, na.rm=T))->income_prov
+income_prov
+```
+
+We can also *combine groups*. Let's say we want to look at the average income by provinces comparing the different dwelling types. We just add a second grouping variable. 
+
+```{r}
+#| label: group-prov-dwelling
+
+shs_subset %>% 
+  group_by(Prov, DwelTyp) %>% 
+  summarise(avg=mean(`Total Income`, na.rm=T))
+
+```
+
+
+# Mutating Columns
+
+Often we want to take one variable and turn it into something else. This is something different than what we just did. Often you might want to *reduce* the number of categories a variable has. For example, you might want to take a `numeric` variable (e.g. age and income) and turn it into a categorical variable for some kind of analysis. For example, you might want to take people's ages (a number) and turn them into generations. Or you might want to take a very fine-grained categorical variable (e.g. province or level of schooling) and reduce it to a smaller number of categories (e.g. region or degree (yes/no)). 
+
+There are actually quite a few ways to do this, but honestly, the easiest way is to use the `Recode()`
+ function in the `car` library. 
+
+```{r load-car}
+#Uncomment if you need to install
+#install.packages('car')
+library(car)
+```
+
+## Recoding a categorical variable
+ 
+Let's take a look aagain at our data frame.
+
+```{r }
+#| label: glimpse-mutate
+glimpse(shs_subset)
+```
+
+Let's check the levels of the `Prov` variable to be sure we know what we are working with. 
+
+```{r check-levels}
+#Check levels
+levels(shs_subset$Prov)
+
+#Or use table()
+table(shs_subset$Prov)
+```
+
+So, somehow, our `Prov` variable has Alberta and Saskatchewan Manitoba and BC separated out but the Atlantic Provinces lumped in. Let's turn the `Province` variable into a `Region` variable converting those into a new value called `West`.
+
+The syntax is as follows: `Recode(variable_name, "
+'old_value'='new_value';
+'old_value'='new_value'
+")`[^1]
+
+
+[^1]: In this case the capital R is extremely important. Originally, the `car` package contained a `recode()` command with a small R. Later, `dplyr` introduced its own `recode` command which is a little more finicky. To play more nicely, the author of the `car` package added `Recode()` to his package to not step on the toes of the more popular `dplyr` package.
+
+
+```{r }
+#| label: recode
+shs_subset %>% 
+mutate(Region=Recode(Prov, "'Alberta'='West' ; 
+                     'Saskatchewan'='West'; 
+                     'British Columbia'='West' ;
+                     'Manitoba'='West';
+                     'Territorial Capitals'='North'"))->shs_subset
+table(shs_subset$Region)
+
+```
+
+::: {.callout.tip}
+A really key thing about `Recode()` is that it must be `precise`. There is no room for any spelling mistakes whatsoever. `Ablerta` will never become `West`. :::
+
+## Recoding a numeric variable
+
+You can also use `Recode()` to recode a numeric variable into larger categories. 
+
+Let's take a look at the `Total Income` variable
+
+```{r summary_income}
+summary(shs_subset$`Total Income`)
+```
+
+It's the same thing, but the number values do not need to be wrapped in single quotes. You can also specify `as.factor=T` at the end in order to ensure that the new variable ist stored as a `factor`
+
+```{r income}
+
+shs_subset %>% 
+  mutate(Income2=Recode(`Total Income`, "1:50000='Less than $50K';
+                        50001:100000='$50K to $100K';
+                        100001=150000='$101Kto $150K';
+                        15100:571250='> $150K'", as.factor=T))->shs_subset
+
+
+```
+
+Let's check the results and see if we are happy. 
+
+```{r}
+#| label: inc2-levels
+#| output.lines: 30
+glimpse(shs_subset)
+levels(shs_subset$Income2)
+
+```
+
+Another way to change the levels of a factor is in the `forcats()` package. We will be using this package when we come to the section on graphing so it's worth it to learn it now.
+
+As with almost all `tidyverse` functions, it works seamlessly with all the others. 
+
+The problem is that we would like the leves of our new factor to run from `Less than $50K` to `$50K to $100K` to `> $150K`. 
+
+The `forcats` package provides a ton of functions that start with `fct_` that manipultes the levels and order of factor levels. 
+
+We don't actually have to load the package, because it is part of the `tidyverse` suite. 
+
+Look at the help page for `fct_relevel()`
+```{r help-revel}
+?fct_relevel
+
+```
+```{r show-levels}
+levels(shs_subset$Income2)
+```
+
+```{r relevel}
+
+shs_subset %>% 
+  mutate(Income3=fct_relevel(Income2, "Less than $50K", "$50K to $100K", "> $150K"))->shs_subset
+
+levels(shs_subset$Income2)
+levels(shs_subset$Income3)
+
+```
+
+# Recoding with `case_when()`- An Alternative Method
+
+There is an alternative way to recode variables, namely, using `case_when()`. You can think about this function as, *when one thing is the case, do this other thing*. 
+
+So in this example, we are saying,  when the variable `Income` is less than 50,001, return `Less than $50K`. But when it is more than 50,000, return `More than $50K` and save the results back into `Income4`.
+
+```{r case-when}
+shs_subset %>% 
+  mutate(Income4=case_when(
+    `Total Income` < 50001 ~ "Less than $50K",
+    `Total Income` >50000 ~ "More than $50K"
+  ))
+```
+
+The `case_when()` method can be used pretty much anytime, but it *must* be used when recoding *two* variables. 
+
+For we have information on household level of education *and* income. You could imagine that we might want to classify people using information on both. For example, we all know rich families with low levels of education (e.g. trades people who do really well for themselves); and we know people with high levels of education and high income (e.g. doctors, lawyers), and we similarly, we know people with low levels of income but high levels of education (e.g. a university graduate just starting out) and we know people with low levels of education and low levels of income (e.g. people in unskilled occupations ). 
+
+In this case 
+
+Let's check the `levels` of our education variable.
+
+```{r check-levels-education}
+levels(shs_subset$Education)
+```
+To really simplify things: let's make a variable with four categories:
+`poor low education`, `rich low education`, `poor high education` and `rich high education`
+
+Let's say anyone earning \$50,000 or less is poor and \$50,000 or more is rich and anyone with high school or less is low levels of education.
+
+```{r case-when-two-variables}
+shs_subset %>% 
+  mutate(Class=case_when(
+    #Poor and people with less than high school
+    `Total Income`<50001 & Education=="Less than high school diploma or its equivalent"~ "poor low education",
+    #poor and people with high school
+        `Total Income`<50001 & Education=="High school diploma, high school equivalency certificate, or"~ "poor low education",
+        #Rich and people with less than high school
+        `Total Income`>50000 & Education=="Less than high school diploma or its equivalent"~ "rich low education",
+    #Rich and people with high school
+            `Total Income`>50000 & Education=="High school diploma, high school equivalency certificate, or"~ "poor low education",
+    #Poor and people with diploma
+        `Total Income`<50001 & Education=="Certificate or diploma from a trades school, college, CEGEP"~ "poor high education",
+    #Poor and people with degree,
+       `Total Income`<50001 & Education=="University certificate or diploma"~ "poor high education",
+#rich and people with diploma
+       `Total Income`>5000 & Education=="Certificate or diploma from a trades school, college, CEGEP"~ "rich high education",
+#Rich and people with degree
+      `Total Income`>50000 & Education=="University certificate or diploma"~ "poor high education"
+  ))->shs_subset
+```
+
+
+# Note that 
+After completing something like this, it's really a good idea to check the results. Maybe with a `View()`
+```{r }
+#| label: view-class
+#| eval: false
+shs_subset %>% 
+  select(Income3, Education, Class) %>% 
+  View()
+```
+Note, that this is a case where the `str_detect()` function and regular expressions can make our work go really quickly. Instead of using the `==` condition with the `Education` variable, we can use the `str_detect` to detect certain strings.
+
+
+
+```{r}
+#| label: case-when-regex
+
+names(shs_subset)
+shs_subset %>% 
+  mutate(Class=case_when(
+    #Poor and people with less than high school
+    `Total Income`<50001 & str_detect(Education, "Less than|^High school")~ "poor low education",
+        #Poor and people with college or universityl
+    `Total Income`<50001 & str_detect(Education, "^Certificate|^University")~ "poor high education",
+        #Poor and people with less than high school or high school
+    `Total Income`>50001 & str_detect(Education, "Less than|^High school")~ "rich low education",
+            #Richand people with college or universityl
+    `Total Income`>50001 & str_detect(Education, "^Certificate|^University")~ "poor high education"))->shs_subset
+
+```
+
+Notice how that was a heck of a lot less typing. 
+
+

@@ -1,0 +1,40 @@
+---
+title: "Glimpse Output Example"
+format: html
+execute:
+  echo: true
+---
+
+```{r}
+# Setup chunk to define the custom output hook
+library(knitr)
+
+hook_output <- knit_hooks$get("output")
+
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # default behavior
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines) == 1) {
+    if (length(x) > lines) {
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+```
+
+```{r}
+#| label: glimpse
+#| output.lines: 2
+
+library(tidyverse)
+data(mtcars)
+glimpse(mtcars)
+```

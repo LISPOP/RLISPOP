@@ -1,0 +1,117 @@
+---
+title: "Errors And Debugging"
+title: "Introduction to R"
+output: 
+  bookdown::html_document2:
+    toc: yes
+    toc_float: yes
+    toc_depth: 3
+author:
+  - "Simon J. Kiss"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Errors and asking for help
+
+You will get a ton of errors and *that is par for the course*. It is to be expected. Here are some tips for dealing with them. 
+
+
+1. Read the error message *carefully*. Error messages can be extremely technical and hard to parse, it is true. But, they *are* usually informative. Consider this error
+
+```{r error1, error=T}
+1+'1'
+```
+To be honest, I don't know what a binary operator is. But look at the term, 'non-numeric'. That sounds a lot like what we learned about in terms of data types. If we look closely we see that one of the parts of the equation is actually *non-numeric*
+
+```{r error2}
+1+1
+```
+
+Fixed!
+
+2. **Google the error**. Literally cut and paste the error and see what you can find. Everyone does it and there is no penalty for this in the class. On the contrary, this will deliver you rewards as you will more often than not find a solution yourself and solve any problems you encounter. 
+
+3. **Google the problem** There are *tons* of resources like blog posts and YouTube videos out there about how to use R. *Use them*. There is no need to cite where you find solutions. 
+
+4. **Use ChatGPT or Microsoft Copilot** early and use it often!!!!!!
+
+4. **Use the ?** Every function has a help page associated with it. You can call it in the bottom right window with:
+
+```{r help-glimpse, eval=F}
+?glimpse()
+```
+read it carefully, for tips. At the bottom of the help page, there is usually reproducible code you can cut and paste to see how something works. 
+
+5. Reproduce the error. This is a big one. A great forum that has tons of posts about R is [Stackoverflow](https://stackoverflow.com/). Posting for help there is a bit of an art, but you can search for your problem! In order to post a question there about your error people will insist that you make a Minimally Reproducible Error. What that means is they are looking for code from you posted on `Stackoverflow` that they can run on their end to get the same error. What this means is you need to pause your work, open up a new R Script and *recreate the environment that is producing the error without the original dataset*. It is *exceptionally* unwieldy to upload a data set and then modify your code to reimport it and then post that to `Stackoverflow` and then have someone redownload that to get the same error. Forget it. So, you must fake your environment with slimmed down code. 
+
+To do this successfully, you must have an idea of what variables are involved in the error and then reproduce those variables as closely as possible. 
+
+1. `numeric` variables
+```{r}
+#Generate a random number 
+var1<-rnorm(n=100, mean=55, sd=10)
+#If your numeric variable has no decimals, round the new fake one. 
+var1<-round(var1, 0)
+#check
+var1
+```
+
+2. `factor` and `character` variables
+```{r}
+#sample(*)
+var2<-sample(
+  #The first argument is a vector of character strings that are sample from
+  c("red", "blue", "orange"), 
+  #The size argument is how many times you will sample
+  #Note, this should match the number of data points that you are generating in other fake variables
+  #i.e. n=100 above
+  size=100, 
+  #usually specify T because if not, it will sample red, but not replace it, sample blue, not replace sample orange, not replace it and then have nothing more to sample 
+  replace=T, 
+  #If you have a sense that your factor variable more instances of one value than other, then you can specify the probability of each response. 
+  prob=(c(0.2, 0.25, 0.5)))
+# Note that this a *character* vector
+class(var2)
+#to quickly convert to a factor, if you think you need it. 
+var2<-factor(var2)
+```
+
+Then, you tie these together into a data frame. 
+
+```{r}
+#load libraries necessary
+library(tidyverse)
+df<-data.frame(var1=var1, var2=var2)
+head(df)
+#use glimpse()
+glimpse(df)
+
+```
+
+3. Missing data - If you think missing data might be essential to reproducing your error, you can introduce it at random this way. 
+
+```{r}
+#Install this package
+install.packages("missForest")
+#Load
+library(missForest)
+#Introduce this 
+df<-prodNA(df, noNA=0.1)
+glimpse(df) #notice how NA values have started to appear. 
+```
+
+5. Reproduce the error - Now with the fake dataset in hand, you can reproduce the error. You might do something like this. 
+
+```{r}
+cor(df$var1, df$var2, use="everything")
+```
+
+At the end of it, you are left with a script that looks like in the file `how_to_make_a_fake_data_frame.R' in that you can plunk into a post at [Stackoverflow](http://stackoverflow.com) and you will get a response quite quickly!
+
+## Exercise 
+
+I have created an error-riddled file in the RScript "find_errors_debug.R"  There are *five* errors in the fi
