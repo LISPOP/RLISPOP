@@ -1,0 +1,199 @@
+---
+title: "Data Cleaning"
+format: html
+editor: visual
+toc: true
+toc-location: left
+author: "Simon Kiss"
+execute:
+  warning: false
+  message: false
+  cache: true
+---
+
+>I will let the data speak for itself when it cleans itself.  
+> - Allison Reichel #data
+
+> What all practicing data analysts agree on is that the proportion of project time spent on data cleaning is huge. Estimates of 75-90 percent have been suggested.  
+> - Unknown, Graphics of Large Datasets, p. 20.
+
+
+
+
+
+```{r}
+#| label: load-libraries 
+#load libraries
+#This library raeds in excel worksheets
+library(readxl)
+library(haven)
+library(tidyverse)
+#This library is extremely useful for modifying dates
+library(lubridate)
+library(here)
+# This library provides a very useful Recode command
+library(car)
+
+```
+
+## General strategies for data cleaning.
+
+### Inspect data after import.
+
+It is *essential* to inspect data-sets after importing them to get a feel for what you are dealing with and to spot problems and to ensure your import has worked properly.
+
+After every import you should run: `glimpse()`, `summary()`, `str()`, `tail()` and `head()` to get a glimpse.
+
+Ask yourself these questions:
+
+1.  How many variables are there? How many rows are there? Do those make sense? Did anything get missed? Did anything superfluous get imported? If so, go back and modify your import command by skipping lines etc.
+
+2.  What are the classes of the variables that you are interested in? Are variables that should be numeric actually stored as numbers (e.g. `numeric`, `integer` or `double`) . Are date variables already stored as `date`?
+
+3.  Do you see any immediate duplicate or messed up values in your inspection?
+
+4.  Are there any high levels of missing values? the `summary()` command often provides this information. Are there *no* missing values somewhere? That could be a problem; missing values should be stored as `NA` but they may have been imported simply as white-space.
+
+## How inspect variables one-by-one.
+
+The `class()` is command will inform you .When you have a large data-set it can be hard to visually see what you are dealing with. For `character` or `factor` variables you can quicky
+
+In the famous `iris` data set we have a factor that stores each flower's specific species. But even with a dataset of only 150 observations, it's hard to see all of the results looking for spelling mistakes or mistaken categories.
+
+```{r}
+data("iris")
+glimpse(iris)
+iris$Species
+```
+
+Instead, running `table()` or `factor()` on a `character` or `factor` variable can quickly give you information you need.
+
+```{r}
+#| label: table-species
+table(iris$Species)
+
+```
+
+Running `table()` counts the number of instances of each unique value. So, you quickly see that you are dealing with the categories: `setosa`, `versicolor` and `virginica`. Right away you will see any spelling mistakes.
+
+The `factor()` command prints out all of the values, but it conlcudes with a nice report of the individual `levels` of the factor, which is effectively the same information as reported in `table()` so it can be useful.
+
+```{r}
+#| label: factor-species
+factor(iris$Species)
+  
+```
+
+Looking for mistakes or unique values in `numeric` values can be harder. In this example, it is not too bad, but you can see how in a large dataset with many different individual numeric values, you're going to get an unmanageable number of categories. Numeric variables might require an actual `view()` command to really get a sense of it.
+
+```{r}
+#| label: table-length
+table(iris$Sepal.Length)
+#view(iris$Sepal.Length)
+```
+
+## Examining your work
+
+Coding is always an iterative process. You find problems, try solutions, inspect the solutions and, when they work, save the results.
+
+Each step requires a slightly different approach.
+
+### Inspecting solutions
+
+Suppose we want to collapse the species here into two. This the correct command, but the results that are spit out are hard to diagnose. To test the results, we could slap a `view()` on at the end.
+
+```{r}
+#| label: species-view
+
+
+# iris %>% 
+#   mutate(Species2=Recode(Species,"'versicolor'='setosa'")) %>% view()
+```
+
+Or, we could potentially just save the dataset somewhere and then inspect it. If it works, then we can just modify the script.
+
+```{r}
+#| label: save-inspect
+iris %>% 
+mutate(Species2=Recode(Species,"'versicolor'='setosa'")) ->test
+table(test$Species2)
+#Now repeat, but resave the dataset over the old one. 
+
+iris %>% 
+mutate(Species2=Recode(Species,"'versicolor'='setosa'")) ->iris
+```
+
+# Exercises
+
+::: {.callout-note}
+
+## Exercise 1
+
+1.  Use the `read_excel()` command to read in the file `data/salaries_scrambled.xlsx`
+2.  Save it as `salaries`
+
+:::
+
+```{r}
+#| label: read-data
+
+salaries<-read_excel(path=here("data/salaries_scrambled.xlsx"))
+
+```
+
+::: {#note-inspect .callout-note}
+
+## Exercise 2
+
+1.  Inspect the `salaries` data frame.
+2.  How many rows are there? How many columns?
+3.  do you see any issues off the top?
+:::
+
+::: {#note-rename .callout-note}
+## Exercise 3
+
+1.  Change the names of the variables to be meaningful, lower-case, with *no* white_spaces
+2.  Use underscores to represent white_space if necessary variables should be short, distinct but meaningful.
+3.  use the `names()` function or the `rename()` function in `dplyr()`
+:::
+
+::: {#note-date .callout-note}
+
+## Exercise 4
+
+1. Convert the variable that was called `timestamp` into a `Date` class variable in the format YYYY-MM-DD
+
+
+:::
+
+::: {.callout-note}
+
+## Exercise 5
+2. Convert the variable that contains the respondent age into a `factor`
+3. Remove any inappropriate characters
+4. Filter the dataset so that there are no respondents over 65 or under 18
+
+:::
+
+::: {.callout-note}
+## Exercise 6
+1. Examine the variable that contained the respondent's industry.
+2. Convert it to a factor.
+3. Remove any junk characters.
+
+:::
+
+::: {.callout-note}
+## Exercise 7
+1. Remove any junk characters from the variable that contained the respondent's salary.
+2. Convert this to a `numeric` variable
+
+:::
+
+::: {.callout-note}
+## Exercise 8
+1. Remove any junk characters from the variable that contained the respondent's gender.
+2. Convert it to a factor
+
+:::

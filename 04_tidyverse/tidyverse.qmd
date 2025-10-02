@@ -7,7 +7,7 @@ execute:
   echo: true
   warning: false
   message: false
-  cache: true
+  cache: false
 toc: true
 toc-location: left
 
@@ -357,9 +357,17 @@ Filtering on factors and character strings is different because you're working w
 #Check the levels
 levels(shs_subset$`Household Size`)
 
-#Actually print the variable
+
+```
+
+```{r}
+#| label: print-household-size
+#| output.lines: 25
+
+  #Actually print the variable
 shs_subset$`Household Size`
 ```
+
 
 Note: we can't filter for household sizes of 1, because it's not actually the number 1.
 
@@ -423,8 +431,9 @@ summary(shs_subset)
 
 `is.na()` returns a `logical` variable that is `TRUE` if a value is missing and `FALSE` if not.
 
-```{r is-na,output.lines: 10}
-
+```{r}
+#| label: is-na
+#| output.lines: 10
 is.na(shs_subset$`Earned Income`)
 ```
 
@@ -580,7 +589,7 @@ Rather than having to type the value of each to get them, you can almost always 
 shs_subset$DwelTyp
 ```
 
-::: {#note-regex.callout.note}
+::: {#note-regex .callout-note}
 -Inspect the `DwelTyp` variable in shs_subset
 - Use `filter`, `str_detect()` and a regular expression to filter only respondents who live in an apartment or a `double, row, terrace, etc`. 
 - Try to be as compact as possible. Try different regexes. 
