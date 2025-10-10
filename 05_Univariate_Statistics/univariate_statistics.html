@@ -81,13 +81,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#univariate-statistics" id="toc-univariate-statistics" class="nav-link active" data-scroll-target="#univariate-statistics">Univariate Statistics</a></li>
-  <li><a href="#import-the-data" id="toc-import-the-data" class="nav-link" data-scroll-target="#import-the-data">Import the data</a></li>
+  <li><a href="#import-the-data" id="toc-import-the-data" class="nav-link" data-scroll-target="#import-the-data">Import the data</a>
+  <ul class="collapse">
   <li><a href="#measures-of-central-tendency" id="toc-measures-of-central-tendency" class="nav-link" data-scroll-target="#measures-of-central-tendency">Measures of Central Tendency</a>
   <ul class="collapse">
   <li><a href="#mean" id="toc-mean" class="nav-link" data-scroll-target="#mean">Mean</a></li>
   <li><a href="#median" id="toc-median" class="nav-link" data-scroll-target="#median">Median</a></li>
   <li><a href="#mode" id="toc-mode" class="nav-link" data-scroll-target="#mode">Mode</a></li>
   </ul></li>
+  </ul></li>
+  <li><a href="#measures-of-disperson" id="toc-measures-of-disperson" class="nav-link" data-scroll-target="#measures-of-disperson">Measures of Disperson</a></li>
   </ul>
 </nav>
 </div>
@@ -120,8 +123,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="univariate-statistics" class="level2">
-<h2 class="anchored" data-anchor-id="univariate-statistics">Univariate Statistics</h2>
+<section id="univariate-statistics" class="level1">
+<h1>Univariate Statistics</h1>
 <p>Here we look at some basic statistical ways to assess <em>one variable</em>, e.g.&nbsp;*univariate statistics in R.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
@@ -129,31 +132,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="import-the-data" class="level2">
-<h2 class="anchored" data-anchor-id="import-the-data">Import the data</h2>
-<p>Let’s work with the Survey of Household Spending dataset that is stored in the <code>course_data</code> subfolder. Note that that folder is stored in a folder <em>above</em> the current working directory. If you have opened up the <code>05_univariate_statistics.Rproj</code> folder then you should be in that working directory.</p>
-<p>For me, on my computer, that directory is:</p>
+<section id="import-the-data" class="level1">
+<h1>Import the data</h1>
+<p>Let’s work with the Survey of Household Spending dataset that is stored in the <code>course_data</code> subfolder.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/05_Univariate_Statistics"</code></pre>
-</div>
-</div>
-<p>But the data set is stored in a folder <em>next to</em> <code>05_Univariate_Statistics</code>. The <code>here()</code> package can help us get there.</p>
-<p>By adding <code>..</code> to <code>here()</code> we move up one directory, then we can add the name of the directory <code>course_data</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>shs<span class="ot">&lt;-</span><span class="fu">read_sav</span>(<span class="fu">here</span>(<span class="st">'..'</span>,<span class="st">'course_data'</span>, <span class="st">'shs.sav'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>shs<span class="ot">&lt;-</span><span class="fu">read_sav</span>(<span class="fu">here</span>(<span class="st">'..'</span>,<span class="st">'course_data'</span>, <span class="st">'shs.sav'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s play with these two variables. Note, that in the <code>select()</code> command you can change the names the same way as with the <code>rename()</code> command.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>shs <span class="sc">%&gt;%</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">Income=</span>HH_TotInc,<span class="at">Dwelling=</span>DwelTyp, <span class="at">Taxes=</span>TX001)<span class="ot">-&gt;</span>shs_subset</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert labelled variables to factors</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>shs_subset<span class="ot">&lt;-</span><span class="fu">as_factor</span>(shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>shs <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">Income=</span>HH_TotInc,<span class="at">Dwelling=</span>DwelTyp, <span class="at">Taxes=</span>TX001)<span class="ot">-&gt;</span>shs_subset</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert labelled variables to factors</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>shs_subset<span class="ot">&lt;-</span><span class="fu">as_factor</span>(shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
 <section id="measures-of-central-tendency" class="level2">
 <h2 class="anchored" data-anchor-id="measures-of-central-tendency">Measures of Central Tendency</h2>
 <p>One of the first things you want to know with a variable is a measure of where the center is, or what the typical value of that variable is. These are variables of central tendency. There are three: mean, median and mode. All three can be used to describe numeric variables, but only mode can be used to describe categorical variables.</p>
@@ -161,22 +154,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="mean">Mean</h3>
 <p>We find the mean of a variable with <code>mean()</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 86698.86</code></pre>
 </div>
 </div>
 <p>Note that if there are any missing values in a variable, you will need to set <code>na.rm=T</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income, <span class="at">na.rm=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income, <span class="at">na.rm=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 86698.86</code></pre>
 </div>
 </div>
 <p>You can always save the result.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mean_income<span class="ot">&lt;-</span><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mean_income</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mean_income<span class="ot">&lt;-</span><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mean_income</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 86698.86</code></pre>
 </div>
@@ -186,7 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="median">Median</h3>
 <p>The trouble with the average is that it is vulnerable to outliers. The classic joke is that if Bill Gates walks into a room with 100 people suddenly the average income of the room skyrockets. In cases like this, the better measure is the <code>median()</code> which finds the value at which half the values are below and half are above.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 71662.5</code></pre>
 </div>
@@ -196,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="mode">Mode</h3>
 <p>In fact, there is no built-in command to take the mode of a variable. The way to do it is to run a <code>table()</code> command on a variable and count the categories that have the most responses.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Dwelling)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Dwelling)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
                Single detached Double, row, terrace or duplex 
@@ -205,7 +198,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                           2904 </code></pre>
 </div>
 </div>
+<p>The most frequently reported type of dwelling in Canada is a single detached home. No surprise.</p>
 </section>
+</section>
+</section>
+<section id="measures-of-disperson" class="level1">
+<h1>Measures of Disperson</h1>
+<p>In addition to looking at where the centre of a a variable is, we are also interested in looking at how <em>dispersed</em> a variable is. how clustered around the center is it. After all two classes might have exactly the same average grade, but one class might have each student receiving exactly the same grade, while another class might be made up of a lot of high and low-achievers.</p>
+<p>The most frequently used measure of dispersion is the standard deviation. It is returned with the <code>sd()</code> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 64049.21</code></pre>
+</div>
+</div>
+<p>The standard deviation is <em>always</em> expressed in the units from which it is derived; in this case $ per year. At the same time, it is only ever used for numeric variables.</p>
 </section>
 
 </main>

@@ -37,7 +37,7 @@ knit_hooks$set(output = function(x, options) {
 })
 ``` 
 
-## Univariate Statistics
+# Univariate Statistics
 
 Here we look at some basic statistical ways to assess *one variable*, e.g. *univariate statistics in R. 
 
@@ -49,21 +49,9 @@ library(here)
 library(tidyverse)
 
 ```
-## Import the data
+# Import the data
 
-Let's work with the Survey of Household Spending dataset that is stored in the `course_data` subfolder. Note that that folder is stored in a folder *above* the current working directory. If you have opened up the `05_univariate_statistics.Rproj` folder then you should be in that working directory.
-
-For me, on my computer, that directory is: 
-
-```{r}
-#| label: working-directory
-getwd()
-
-```
-
-But the data set is stored in a folder *next to* `05_Univariate_Statistics`. The `here()` package can help us get there. 
-
-By adding `..` to `here()` we move up one directory, then we can add the name of the directory `course_data`.
+Let's work with the Survey of Household Spending dataset that is stored in the `course_data` subfolder.
 
 ```{r}
 #| label: data-import
@@ -132,3 +120,18 @@ In fact, there is no built-in command to take the mode of a variable. The way to
 
 table(shs_subset$Dwelling)
 ```
+
+The most frequently reported type of dwelling in Canada is a single detached home. No surprise. 
+
+# Measures of Disperson
+
+In addition to looking at where the centre of a a variable is, we are also interested in looking at how *dispersed* a variable is. how clustered around the center is it. After all two classes might have exactly the same average grade, but one class might have each student receiving exactly the same grade, while another class might be made up of a lot of high and low-achievers. 
+
+The most frequently used measure of dispersion is the standard deviation. It is returned with the `sd()` command. 
+
+```{r}
+#| label: sd
+sd(shs_subset$Income)
+```
+The standard deviation is *always* expressed in the units from which it is derived; in this case $ per year. At the same time, it is only ever used for numeric variables. 
+
