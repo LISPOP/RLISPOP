@@ -64,7 +64,7 @@ include_graphics("images/csv2.png")
 - `read_csv` is a function provided in the `readr`. Both work well. 
 
 
-We have stored a series of CSV files from the City of Toronto in the folder `data/parking`. 
+We have stored a series of CSV files from the City of Toronto in the folder `course_data/parking`. 
 Let's import the first one.  Note: the best way to access data in subfolders is to use the `here()` function in the `here` package
 
 If you have not installed it, please do so.
@@ -88,15 +88,15 @@ You can also combine `here` with `..` to move up one directory!
 here("..")
 ```
 
-Now try to combine `here()` with a subfolder name. 
+From there, you can navigate down one directory. We can use the command `list.files()` to list the files in a directory
 
 ```{r here-data}
-here("data")
+list.files(here("../course_data/parking"))
 ```
-
+We just add that first file name and append it to the path name we have developed and pass it to `read.csv`
 
 ```{r segment2}
-df_csv <- read.csv(file=here("data/parking/Parking_Tags_Data_2024_1.csv"))
+df_csv <- read.csv(file=here("../course_data/parking/Parking_Tags_Data_2024_1.csv"))
 ```
 
 ## Bulk CSV
@@ -110,7 +110,7 @@ Note: This assumes that each CSV file is structured in exactly the same way!!!!
 ```{r install_muckrakr, warning=F, message=F}
 # If you don't have devtools installed yet, uncomment and run the line below
 #install.packages("devtools")
-devtools::install_github("sjkiss/skpersonal", force=T)
+#devtools::install_github("sjkiss/skpersonal", force=T)
 library(skpersonal)
 library(here)
 
