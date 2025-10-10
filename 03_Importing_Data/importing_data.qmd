@@ -2,17 +2,22 @@
 title: "Importing Data"
 author: 
 - "Simon J. Kiss"
-output:
-  html_document:
-    toc: yes
-    toc_float: yes
+format: html
 description: Importing Data
+toc: true
+toc-location: left
+execute: 
+  message: false
+  warning: false
+  cache: true
+  echo: true
 ---
 # Load libraries
 
 For this we will need the following libraries:
 
 ```{r}
+#| label: load-libraries
 #General
 library(tidyverse)
 #For file paths
@@ -22,7 +27,7 @@ library(janitor)
 #For webscraping
 library(rvest)
 #For bulk csv and excel files
-library(muckrakr)
+library(skpersonal)
 #For reading excel files
 library(readxl)
 #For importing SPSS data
@@ -75,23 +80,83 @@ The `here` package provides just the `here()` command. Run it and see what it do
 here()
 ```
 
-Our data has been stored in a central course repository that is *not* in a subfolder of this current working directory. It is *next* to it. 
-We can access that though by using `..` to go *up* one directory and then *down*. 
+
+You can also combine `here` with `..` to move up one directory!
 
 ```{r}
-#| label: two-dots
-list.files(here(".."))
-list.files(here("..", "course_data"))
-
+#| label: two-dotes
+here("..")
 ```
 
-So we can plunk those `..` into here to navigate to `course_data/parking/Parking_Tags_Data_2024_1.csv`.
+Now try to combine `here()` with a subfolder name. 
+
+```{r here-data}
+here("data")
+```
+
 
 ```{r segment2}
-df_csv <- read.csv(file=here("..", "course_data/parking/Parking_Tags_Data_2024_1.csv"))
+df_csv <- read.csv(file=here("data/parking/Parking_Tags_Data_2024_1.csv"))
+```
+
+## Bulk CSV
+
+Sometimes we have to read in multiple csv files at once. 
+
+But with R, you can script that process. There is a custom function in the `muckrakr` package that does this really well. I have modified it a little bit and stored it in my own personal package `skpersonal`. This package is installed with the `devtools` package using the `install_github` command
+
+Note: This assumes that each CSV file is structured in exactly the same way!!!! 
+
+```{r install_muckrakr, warning=F, message=F}
+# If you don't have devtools installed yet, uncomment and run the line below
+#install.packages("devtools")
+devtools::install_github("sjkiss/skpersonal", force=T)
+library(skpersonal)
+library(here)
+
+
+```
+
+The function we want to use is called `bulk_csv()`.
+
+It looks like this (**Don't run this command, it's theoretical**):
+
+```{r example, eval=F}
+?bulk_csv
+bulk_csv(folder = "DEFAULTBULKCSV2017", export = "filenamedefaultbulkcsv2018.csv"")
+```
+
+Two arguments: 
+
+* folder - here you have to specify the folder that holds the CSV files you want to import. It's always best to use the `here()` command to get there. 
+* export - File name to export csv file as, if wanted.
+
+Alright, so the CSV files we want to import are stored in the `course_data/parking` folder 
+
+
+```{r csvs, echo = F, out.width="100%"}
+library(knitr)
+include_graphics("images/csvs.png")
 ```
 
 
+> **PRO-TIP**  
+This package is based on readr, so passing on variables from read_csv will work in bulk_csv. These variables will apply to the import of each CSV sheet.
+
+
+To create a new dataframe with all the data sets combined, the command would be:
+
+```{r bulk_csv, message=FALSE, warning=FALSE}
+library(here)
+
+library(skpersonal)
+#Check to see the files are there
+#Notice the need to use here() combined with the .. to go up one directory
+list.files(here('../course_data/parking'))
+combined_data <- bulk_csv(folder=here('../course_data/parking'))
+
+
+```
 
 # Importing Excel Files
 Excel spreadsheets are unique in that they can contain multiple spreadsheets as a workbook.
@@ -146,7 +211,7 @@ The problem with Excel files is that people love to format it in ways that make 
 But this time we'll add `skip=2` so it skips the first rows when bringing in the data.
 
 ```{r skip}
-df_xl <- read_excel("../course_data/StatisticsSummary.xls", sheet=1, skip=2)
+df_xl <- read_excel("data/StatisticsSummary.xls", sheet=1, skip=2)
 ```
 
 Much better
@@ -244,6 +309,12 @@ However, in anticipation of the work we're going to be doing, we should go ahead
 
 
 
+### Bulk Excel files
+
+Same concept as above, but the function name is `bulk_excel()`.
+
+
+
 # One Excel workbook with multiple worksheets
 
 Sometimes, we have a situation where we have one Excel workbook with multiple worksheets. In some situations, one worksheet 
@@ -263,7 +334,7 @@ What happens though if we want to import multiple sheets?
 The first thing we do is to make an object that is a file path to where the Excel workbook is stored. 
 
 ```{r make-path}
-file_path<-here("course_data/cudo.xlsx")
+file_path<-here("data/cudo.xlsx")
 ```
 
 Now, we need to use the function `excel_sheets()` to get the names of each worksheet in the workbook. We will store them in an object called `sheet_names`.
@@ -374,6 +445,135 @@ Potential pitfalls:
 2. There may be hard to read characters somewhere (e.g. @, ! #)
 
 
+# SPSS Files
+
+SPSS is a very popular software program for statistical analysis of social science data. It is often used to store survey data used by public opinion researchers and Statistics Canada because you can store survey responses as `factors` and not just as numbers as in `csv` files. 
+
+If you are looking at `individual` level data from Statistics Canada, you will often get data in this format. 
+
+Here, I've provided the 2017 version of Statistics Canada's *Survey of Household Spending*. It is in the `data` subfolder. 
+
+```{r household-spending}
+list.files(path=here('data'))
+
+```
+
+We use the `haven` package to import SPSS files that have a `.sav` extension.
+
+```{r load-haven}
+library(haven)
+library(labelled)
+shs<-read_sav(here('data/shs.sav'))
+```
+
+One thing that is difficult with a lot of these big surveys is they ask *a lot* of questions, so it can be hard to find the variables you want. There's nothing wrong with opening up the technical documentation that comes with teh file to search for which questions were asked. But `haven` provides a function that basically lets you search through the question texts which are techincaly known as `variable labels`. 
+
+```{r look-for}
+lookfor(shs, 'internet')
+lookfor(shs, 'income')
+lookfor(shs, 'rent')
+
+```
+
+You can also do a `View()` and look at the whole document. 
+
+```{r view, results='hide', eval=F}
+View(var_label(shs))
+
+```
+
+
+## Labelled Variables Versus Factors 
+
+In the first lesson, we learned about `numeric`, `character` and `factor` variables. Here I need to introduce a slightly new tuype of variable: a `labelled` variable. Labelled data are extremely common in GUI software like SPSS. Effectively, labelled data attach labels to numbers to commmunicate to users what each number stands for. For example, in SPSS you might have a numeric variable that comes from a Likert question (e.g. Strongly agree to strongly disagree). The strongly agree might be stored as a 1, the agree might be stored as a 3, disagree as a 5 and strongly disagree stored as a 7. 
+
+However, you will also often have values that reflect a `Don't know` or a `refused to answer`. These might be represented with a 9 or a 99. In labelled data (and often in SPSS) users can choose to select particular labels as missing data. For example, you can specify 
+
+In R, the closest equivalent to labels is the factor `levels`. The thing is, factor levels *only sets missing values as `NA`. There is no way to have a `Don't Know` level that is stored as `Don\t Know` but be treated as missing.* If you want to ignore `Don\'t Know' answers with factors they must be set to NA.
+
+After importing a file from SPSS, the variables are all treated as some version of `labelled`. Let's take a look.  In R, we almost never work with `labelled()` variables, they must almost always be converted to their native R class: `numeric` or `factor`. 
+```{r}
+#| label: check-labelled
+#| output.lines: 10
+
+shs %>% 
+  select(Prov, HHType6, HH_TotInc) %>% head()
+```
+
+Notice underneath each variable name is printed `chr+lbl` or maybe `S3: `haven_labelled` for the first two variables and `dbl` for the third? 
+The first two variables are `character` and `labelled` variables while the third is a `numeric` (`dbl` is just a numeric variable with a decimal point).
+
+Notice also that for the two `labelled` variables, you can see how there is a number `14` and a label `Atlantic provinces` stored there. That tells you that there are labels attached to each of the numbers there. That is very useful information. But there is another trick here: Those *numbers* are actually stored as *characters!*, i.e. it is not `1` it is `"1"`. That is going to require a particular conversion and illustrates another problem that can pop up on import. 
+
+If you print one of the variables you get similar information.  Let's print the first 10 examples of `HHType6`
+
+```{r}
+#| label: print-HHtype
+
+shs$HHType6[1:10]
+```
+
+
+Now, you can't actually do much with variables that are stored as `labelled`. If you want to see what the distribution of responses is of the provinces, you can try `table()`
+
+```{r}
+#| label: prov
+table(shs$Prov)
+```
+
+But we don't know here what 14 refers to. 
+
+So, we need to convert labelled variables to one of the native R categories of either a `factor` or sometimes to a `numeric`. There are multiple ways to do that and multiple times to do that. 
+
+1. An easy way is to wrap a variable in `as_factor()` from the `labelled` package. It simply takes the labels and applies them to the numbers they are mapped to them and, done. However this only does this the one time. 
+
+```{r}
+#| label: show-as-factor
+table(as_factor(shs$Prov))
+```
+
+2. Other times, you want to make a more permanent solution. Consider the ``HHType6` variable. 
+
+```{r}
+#| label: show-as-factor-hhtype
+table(as_factor(shs$HHType6))
+```
+
+If we ever did a graph with those labels, yikes they are long. It will not look very pretty. Also, there are a lot of different categories. More often than not, we will want to collapse them. So, what we might do is recode this variable into another one stored as a factor. To do that, though, it's going to save us a lot of time if we just recode the underlying numbers to some new factor category than to do that with converting `Other household with related or unrelated persons ` to `Other`. 
+
+```{r}
+#| label: recode-variables
+#| error: true
+#| output.lines: 20
+library(car)
+val_labels(shs$HHType6)
+class(shs$HHType6)
+shs %>% 
+  mutate(household=case_when(
+    HHType6==1~'Single',
+    HHType6 >1~'Multiple'
+  )) 
+```
+
+Notice the error.  Becuase the `1` is actually a "1" you can't actually conduct a `>` operation on it, because R doesn't recognise it as a number. To deal with this we need to really do some fancy footwork. First we need to wrap it in an `as.character()` command and then wrap *that* in an `as.numeric()` command. So first we get rid of the `labelled` aspect by converted to `character` and then convert those characters to `numeric`. 
+
+
+```{r}
+#| label: as-numeric-household
+#| output.lines: 20
+
+library(haven)
+
+shs %>% 
+  mutate(household=case_when(
+    as.numeric(as.character(HHType6))==1~'Single',
+    as.numeric(as.character(HHType6)) >1~'Multiple'
+  )) ->shs
+table(shs$household)
+```
+
+Not every example of converting `labelled` data will be like this, it will often be simpler, but I do want to highlight this issue when dealing with data that comes from SPSS or Stata.
+
 # Scraping Data From Tables
 
 We can use some functions in the `rvest` library which is part of the `tidyverse`. It works really well. 
@@ -450,45 +650,9 @@ glimpse(newspapers)
 et Voila!
 
 
-# SPSS Files
-
-SPSS is a very popular software program for statistical analysis of social science data. It is often used to store survey data used by public opinion researchers and Statistics Canada because you can store survey responses as `factors` and not just as numbers as in `csv` files. 
-
-If you are looking at `individual` level data from Statistics Canada, you will often get data in this format. 
-
-Here, I've provided the 2017 version of Statistics Canada's *Survey of Household Spending*. It is in the `data` subfolder. 
-
-```{r household-spending}
-list.files(path=here('data'))
-
-```
-
-We use the `haven` package to import SPSS files that have a `.sav` extension.
-
-```{r load-haven}
-library(haven)
-library(labelled)
-shs<-read_sav(here('data/shs.sav'))
-```
-
-One thing that is difficult with a lot of these big surveys is they ask *a lot* of questions, so it can be hard to find the variables you want. There's nothing wrong with opening up the technical documentation that comes with teh file to search for which questions were asked. But `haven` provides a function that basically lets you search through the question texts which are techincaly known as `variable labels`. 
-
-```{r look-for}
-lookfor(shs, 'internet')
-lookfor(shs, 'income')
-lookfor(shs, 'rent')
-
-```
-
-You can also do a `View()` and look at the whole document. 
-
-```{r view, results='hide', eval=F}
-View(var_label(shs))
-
-```
 
 
-# APIs
+# APIs - Don\'t Complete this section!
 ## Twitter data
 
 R works very well with lots of APIs, including Twitter. The package `rtweet` lets you import twitter data quite quickly.  A full tutorial is [here](https://cran.r-project.org/web/packages/rtweet/vignettes/rtweet.html). The trick is that you need to register with twitter with some steps spelled out there. 
