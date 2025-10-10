@@ -1,5 +1,5 @@
 # import file shs.sav in the data subfolder using `read_sav`
-shs<-read_sav(file=here("data/shs.sav"))
+shs<-read_sav(file=here("../course_data/shs.sav"))
 #glimpse
 glimpse(shs)
 #convert any labelled variables to factor
