@@ -8,7 +8,7 @@
 
 <meta name="author" content="Simon J. Kiss">
 
-<title>Working Directories</title>
+<title>Univariate Statistics</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,16 +58,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="Working_Directories_files/libs/clipboard/clipboard.min.js"></script>
-<script src="Working_Directories_files/libs/quarto-html/quarto.js"></script>
-<script src="Working_Directories_files/libs/quarto-html/popper.min.js"></script>
-<script src="Working_Directories_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="Working_Directories_files/libs/quarto-html/anchor.min.js"></script>
-<link href="Working_Directories_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="Working_Directories_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="Working_Directories_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="Working_Directories_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="Working_Directories_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="univariate_statistics_files/libs/clipboard/clipboard.min.js"></script>
+<script src="univariate_statistics_files/libs/quarto-html/quarto.js"></script>
+<script src="univariate_statistics_files/libs/quarto-html/popper.min.js"></script>
+<script src="univariate_statistics_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="univariate_statistics_files/libs/quarto-html/anchor.min.js"></script>
+<link href="univariate_statistics_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="univariate_statistics_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="univariate_statistics_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="univariate_statistics_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="univariate_statistics_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -80,13 +80,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#working-directories" id="toc-working-directories" class="nav-link active" data-scroll-target="#working-directories">Working directories</a>
+  <li><a href="#univariate-statistics" id="toc-univariate-statistics" class="nav-link active" data-scroll-target="#univariate-statistics">Univariate Statistics</a></li>
+  <li><a href="#import-the-data" id="toc-import-the-data" class="nav-link" data-scroll-target="#import-the-data">Import the data</a></li>
+  <li><a href="#measures-of-central-tendency" id="toc-measures-of-central-tendency" class="nav-link" data-scroll-target="#measures-of-central-tendency">Measures of Central Tendency</a>
   <ul class="collapse">
-  <li><a href="#projects" id="toc-projects" class="nav-link" data-scroll-target="#projects">Projects</a></li>
-  <li><a href="#the-here-package." id="toc-the-here-package." class="nav-link" data-scroll-target="#the-here-package.">The <code>here()</code> package.</a>
-  <ul class="collapse">
-  <li><a href="#organized-folders" id="toc-organized-folders" class="nav-link" data-scroll-target="#organized-folders">Organized folders</a></li>
-  </ul></li>
+  <li><a href="#mean" id="toc-mean" class="nav-link" data-scroll-target="#mean">Mean</a></li>
+  <li><a href="#median" id="toc-median" class="nav-link" data-scroll-target="#median">Median</a></li>
+  <li><a href="#mode" id="toc-mode" class="nav-link" data-scroll-target="#mode">Mode</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -97,7 +97,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Working Directories</h1>
+<h1 class="title">Univariate Statistics</h1>
 </div>
 
 
@@ -120,145 +120,91 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="working-directories" class="level1">
-<h1>Working directories</h1>
-<p>Your <em>working directory</em> is the folder on your computer in which you are currently working. When you ask R to open a certain file, it will look in the working directory for this file, and when you tell R to save a data file or figure, it will save it in the working directory.</p>
-<p>When you open up RStudio - without opening up a <code>.rproj</code> file (e.g.&nbsp;a project), the default working directory is your home directory on your computer. You can tell what your working directory is by running the command <code>getwd()</code> either in the console or in the R script.</p>
-<p>Try it.</p>
-<p>Open up RStudio *without openening an <code>.Rproj</code> file or a project and run <code>getwd()</code> and see what you get. I get this:</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/getwd_users.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="154"></p>
-</figure>
+<section id="univariate-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="univariate-statistics">Univariate Statistics</h2>
+<p>Here we look at some basic statistical ways to assess <em>one variable</em>, e.g.&nbsp;*univariate statistics in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-</div>
-<p>Working directories can be <em>changed</em> with the commmand <code>setwd()</code>. I’m going to set mine to be my <code>Documents</code> folder on my hard drive. You try it too. This will have to change depending on what your general documetns folder is called and whether or not you work on a Mac or a PC. But give it a try.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set the working directory</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(<span class="st">"~/Documents"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Check to see if it worked</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "/Users/skiss/Documents"</code></pre>
-</div>
-</div>
-<p>OK, so far so good.</p>
-<p>However, this is ultimately unsatisfying for a very simple reason. Everyone’s computer is different. PCs home directories start with <code>c:/</code> and Mac home directories start with <code>Users/user_name</code>. Also, people download packages of files we are working and might not store them in <code>Documents</code> . It might be called <code>My documents</code>. This is going to be a problem in this way.</p>
-<p>Look in the folder that this lesson is located. Check to make sure that you are <em>not</em> in a project and that the working directory is somewhere other than this folder.</p>
-<p>But select <code>File &gt; Open File</code> and navigate to the file in the folder <code>Working_Directories</code> called <code>import.R</code>.</p>
-<p>Open it and run the script, line-by-line or top-to-bottom. You should see this error:</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/warning_cant_find_file.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="360"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>The reason is that R is starting in the working directory returned by <code>getwd()</code> and adding the path name <code>data/test.csv</code> to and it’s not finding it, because <em>it is not there</em>.</p>
-<p>Now, we could modify <code>import.R</code> by putting a <code>setwd()</code> command at the top but this presents a problem. When we are sharing our work with others, we <em>have no idea what their computer folder structre looks like!</em> Is it a Mac? Or a PC? Have they saved their folders on the desktop? Or in their <code>Documents</code> folder?</p>
-<p>For an amusing description of this problem, please see this <a href="https://github.com/jennybc/here_here">page</a>.</p>
-<p>There are very easy practical solutions to this problem. The first is to <em>always</em> - and I do mean <em>always</em> - think and work in terms of <code>RStudio</code> projects. These are defined by files that end in <code>.rproj</code>. Usually I define one project per analysis.</p>
-<!-- When I move `test.R` to my `Documents` folder, I still get this.  -->
-<!-- This causes problems because most people keep their files and projects organized in subfolders.  -->
-<!-- So you need to tell R where to go look for a data-set to import.  -->
-<!-- So, if I make a sub-folder for a project in `~/Documents/Test/` and I put my R script in there and I put my data-set in there, then I need to specify to R to go look in that folder. I can do that in two ways.  -->
-<!-- 1. I can force R to look in that folder with an `absolute path`.  -->
-<!-- ```{r absolute, eval=F, purl=F} -->
-<!-- df<-read.csv('~/Documents/Test/test.csv') -->
-<!-- ``` -->
-<!-- 2. Or at the beginning of the script, I can set the working directory to be `~/Documents/Test/` like this -->
-<!-- ```{r setwd, eval=F, purl=F} -->
-<!-- setwd('~/Documents/Test/') -->
-<!-- ``` -->
-<!-- And then I can run the import command.  -->
-<!-- ```{r import, eval=F, purl=F} -->
-<!-- df<-read.csv(file="test.csv") -->
-<!-- ``` -->
-<!-- Both of these solutions are problematic for the simple reason that they *will not be reproducible on y our end.* Because you do not necessarily have the same folder structure that I do! -->
-<!-- We don't need to worry too much about this in this class, because we are working in RStudio Cloud; but it's *really* important to learn, nonetheless.  -->
-<!-- RStudio has developed a *really* powerful and simple way to deal with this problem that I want you to learn. -->
-<section id="projects" class="level3">
-<h3 class="anchored" data-anchor-id="projects">Projects</h3>
-<p>An RStudio project is a particular type of file, with the extension <code>.rproj</code> that does a few things, but mostly, all it does is it automatically sets the working directory to be <strong>wherever the <code>.Rproj</code> folder is.</strong></p>
-<p>You can open RStudio projects by select <code>File &gt; Open Project</code> or by double-clicking an <code>.rproj</code> file.</p>
-<p>Let’s see what happens.</p>
-<p>Start by running <code>getwd()</code> and make note of where you are. Check to see if you are in an RStudio project by looking in the top-right of the RStudio panel. Hopefully it says <code>Project: None</code>.</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/no_project.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="232"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Now, select <code>File &gt; Open Project</code> and navigate to the folder where this lesson is located and open the file. Open <code>Working_Directories.Rproj</code>.</p>
-<p>Now, look again at the top right. You should see this.</p>
-<p>Also, run <code>getwd()</code> again. This time you should get this:</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/show_project_working_directories.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="312"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>and now, the <em>pièce de résistance</em>, open the file <code>import.R</code> and run the script from top to bottom.</p>
-<p>I’m going to guess you successfully have imported a little fake data frame containing information on age and vote choice.</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/df.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="346"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>What I can do with this, is I can send a link to this folder via <code>OneDrive</code>, or host it on Github, or zip it up and e-mail it to someone and *as long as they open the <code>.rproj</code> file to get into the proper working directory, the script will work in exactly the same way.</p>
-<!-- RStudio Cloud automatically makes a `.rproj` folder called `project.rproj` everytime you set up a project, so you actually don't need to worry about it that much. But if you were to download your package to your computer, open it up on your own computer, by opening the `.rproj` file in rstudio, the working directory would immediately be the folder where the `.rproj` file is; right where it should be.  -->
-<!-- That solves the problem of setting the working directory. We can then use the very simple and powerfule 'here()' package to build paths to folders relative to this project file *wherever and whenever anyone opens a version of the folder on any computer.* -->
 </section>
-<section id="the-here-package." class="level2">
-<h2 class="anchored" data-anchor-id="the-here-package.">The <code>here()</code> package.</h2>
-<p>The <code>here()</code> package is a next-level improvement on this problem and I insist we use it as much as possible. If you have not installed it, please do so and then load it.</p>
-<p>The <code>here</code> package provides just the <code>here()</code> command. Run it and see what it does.</p>
-<div class="cell" data-layout-align="center">
+<section id="import-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-the-data">Import the data</h2>
+<p>Let’s work with the Survey of Household Spending dataset that is stored in the <code>course_data</code> subfolder. Note that that folder is stored in a folder <em>above</em> the current working directory. If you have opened up the <code>05_univariate_statistics.Rproj</code> folder then you should be in that working directory.</p>
+<p>For me, on my computer, that directory is:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/02_Working_Directories"</code></pre>
+<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/05_Univariate_Statistics"</code></pre>
 </div>
 </div>
-<p>Essentially, it creates an <code>absolute path name</code> starting with <em>your</em> root directory down to the working directory of the project you are in.</p>
-<p>Now try to combine <code>here()</code> with a subfolder name in our folder. But the amazing thing is, when <em>I</em> open up and run <code>here()</code> on my computer, <code>here()</code> will generate a path name that is appropriate to <em>my computer</em>. But then when I e-mail you the package of files to work on, it will generate a pathname that is appropriate to <em>your</em> computer.</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/02_Working_Directories/data"</code></pre>
+<p>But the data set is stored in a folder <em>next to</em> <code>05_Univariate_Statistics</code>. The <code>here()</code> package can help us get there.</p>
+<p>By adding <code>..</code> to <code>here()</code> we move up one directory, then we can add the name of the directory <code>course_data</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>shs<span class="ot">&lt;-</span><span class="fu">read_sav</span>(<span class="fu">here</span>(<span class="st">'..'</span>,<span class="st">'course_data'</span>, <span class="st">'shs.sav'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Let’s play with these two variables. Note, that in the <code>select()</code> command you can change the names the same way as with the <code>rename()</code> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>shs <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">Income=</span>HH_TotInc,<span class="at">Dwelling=</span>DwelTyp, <span class="at">Taxes=</span>TX001)<span class="ot">-&gt;</span>shs_subset</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert labelled variables to factors</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>shs_subset<span class="ot">&lt;-</span><span class="fu">as_factor</span>(shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Additionally, <code>here()</code> can be combined with <code>..</code> to go <em>up</em> one directory and then <em>over</em> to a side directory. For example, I have created a central <code>course_data</code> directory next to each module from which we can read the necessary data files.</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/02_Working_Directories/../course_data"</code></pre>
-</div>
-</div>
-<!-- Watch:  -->
-<!-- ```{r example-here, include=F} -->
-<!-- here() -->
-<!-- ``` -->
-<!-- ```{r here-image, echo=F, purl=F} -->
-<!-- knitr::include_graphics("images/here.png") -->
-<!-- ``` -->
-<section id="organized-folders" class="level3">
-<h3 class="anchored" data-anchor-id="organized-folders">Organized folders</h3>
-<p>A final note on keeping your folders organized. It is not <em>necessary</em> but it is <em>highly</em> desirable to organize the folders in your workspaces carefully and logically. Coding can get messy very quickly.</p>
-<p>You <em>should</em> get in the habit of maintaining clear folders for all the different types of material your project will entail.</p>
-<p>At a minimum, there should be one subfolder for your data and one sub-folder for your graphs.</p>
 </section>
+<section id="measures-of-central-tendency" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-central-tendency">Measures of Central Tendency</h2>
+<p>One of the first things you want to know with a variable is a measure of where the center is, or what the typical value of that variable is. These are variables of central tendency. There are three: mean, median and mode. All three can be used to describe numeric variables, but only mode can be used to describe categorical variables.</p>
+<section id="mean" class="level3">
+<h3 class="anchored" data-anchor-id="mean">Mean</h3>
+<p>We find the mean of a variable with <code>mean()</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 86698.86</code></pre>
+</div>
+</div>
+<p>Note that if there are any missing values in a variable, you will need to set <code>na.rm=T</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income, <span class="at">na.rm=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 86698.86</code></pre>
+</div>
+</div>
+<p>You can always save the result.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mean_income<span class="ot">&lt;-</span><span class="fu">mean</span>(shs_subset<span class="sc">$</span>Income)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mean_income</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 86698.86</code></pre>
+</div>
+</div>
+</section>
+<section id="median" class="level3">
+<h3 class="anchored" data-anchor-id="median">Median</h3>
+<p>The trouble with the average is that it is vulnerable to outliers. The classic joke is that if Bill Gates walks into a room with 100 people suddenly the average income of the room skyrockets. In cases like this, the better measure is the <code>median()</code> which finds the value at which half the values are below and half are above.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(shs_subset<span class="sc">$</span>Income)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 71662.5</code></pre>
+</div>
+</div>
+</section>
+<section id="mode" class="level3">
+<h3 class="anchored" data-anchor-id="mode">Mode</h3>
+<p>In fact, there is no built-in command to take the mode of a variable. The way to do it is to run a <code>table()</code> command on a variable and count the categories that have the most responses.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Dwelling)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+               Single detached Double, row, terrace or duplex 
+                          7730                           1858 
+            Apartment or other 
+                          2904 </code></pre>
+</div>
+</div>
 </section>
 </section>
 

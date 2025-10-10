@@ -1,0 +1,134 @@
+---
+title: "Univariate Statistics"
+format: html
+editor: source
+author:  Simon J. Kiss
+execute:
+  echo: true
+  message: false
+  warning: false
+toc: true
+toc-location: left
+---
+
+```{r }
+#| label: output-lines
+#| echo: false
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+``` 
+
+## Univariate Statistics
+
+Here we look at some basic statistical ways to assess *one variable*, e.g. *univariate statistics in R. 
+
+```{r}
+#| label: load-libraries 
+
+library(haven)
+library(here)
+library(tidyverse)
+
+```
+## Import the data
+
+Let's work with the Survey of Household Spending dataset that is stored in the `course_data` subfolder. Note that that folder is stored in a folder *above* the current working directory. If you have opened up the `05_univariate_statistics.Rproj` folder then you should be in that working directory.
+
+For me, on my computer, that directory is: 
+
+```{r}
+#| label: working-directory
+getwd()
+
+```
+
+But the data set is stored in a folder *next to* `05_Univariate_Statistics`. The `here()` package can help us get there. 
+
+By adding `..` to `here()` we move up one directory, then we can add the name of the directory `course_data`.
+
+```{r}
+#| label: data-import
+library(haven)
+shs<-read_sav(here('..','course_data', 'shs.sav'))
+
+
+```
+
+Let's play with these two variables. Note, that in the `select()` command you can change the names the same way as with the `rename()` command.
+```{r}
+shs %>% 
+  select(Income=HH_TotInc,Dwelling=DwelTyp, Taxes=TX001)->shs_subset
+#Convert labelled variables to factors
+
+shs_subset<-as_factor(shs_subset)
+```
+
+
+## Measures of Central Tendency
+
+One of the first things you want to know with a variable is a measure of where the center is, or what the typical value of that variable is. These are variables of central tendency. There are three: mean, median and mode. All three can be used to describe numeric variables, but only mode can be used to describe categorical variables. 
+
+### Mean
+
+We find the mean of a variable with `mean()`
+
+```{r}
+#| label: mean
+mean(shs_subset$Income)
+```
+
+Note that if there are any missing values in a variable, you will need to set `na.rm=T`. 
+
+```{r}
+#| label: mean-na-rm
+mean(shs_subset$Income, na.rm=T)
+```
+
+You can always save the result.
+
+```{r}
+#| label: save-mean
+mean_income<-mean(shs_subset$Income)
+mean_income
+```
+
+### Median
+
+The trouble with the average is that it is vulnerable to outliers. The classic joke is that if Bill Gates walks into a room with 100 people suddenly the average income of the room skyrockets. In cases like this, the better measure is the `median()` which finds the value at which half the values are below and half are above. 
+
+```{r}
+#| label: median
+
+
+median(shs_subset$Income)
+
+```
+
+### Mode
+
+In fact, there is no built-in command to take the mode of a variable. The way to do it is to run a `table()` command on a variable and count the categories that have the most responses. 
+
+```{r}
+#| label: table
+
+table(shs_subset$Dwelling)
+```

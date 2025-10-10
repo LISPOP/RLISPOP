@@ -73,12 +73,12 @@ library(haven)
 library(labelled)
 ```
 
-Then let's load our dataset.
+Then let's load our dataset. We'll be using that `shs.sav` dataset we played with in the `Importing Data` tutorial.
 
 ```{r}
 #| label: data-import
 
-shs<-read_sav(here("data/shs.sav"))
+shs<-read_sav(here("../course_data/shs.sav"))
 
 ```
 
