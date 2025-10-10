@@ -7,7 +7,7 @@ library(here)
 
 #load the data
 
-salaries<-read_excel(path=here("data/salary_data.xlsx"))
+salaries<-read_excel(path=here("../course_data/salary_data.xlsx"))
 salaries %>% 
   slice(1:50)->salaries
 scramble <- function(df, difficulty = "easy") {
@@ -93,9 +93,9 @@ salaries<-scramble(salaries, "easy")
 library(readxl)
 library(openxlsx)
 
-write.xlsx(salaries, file=here("data/salary_data_scrambled.xlsx"))
+write.xlsx(salaries, file=here("../course_data/salary_data_scrambled.xlsx"))
 
-salaries<-read_excel(path=here("data/salary_data_scrambled.xlsx"))
+salaries<-read_excel(path=here("../course_data/salary_data_scrambled.xlsx"))
 # Names
 # change the names of the variables to be meaningful, lower-case, with *no* white_space
 # Use underscores to represent white_space if necessary
