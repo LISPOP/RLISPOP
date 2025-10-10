@@ -11,15 +11,11 @@ execute:
   cache: true
 ---
 
->I will let the data speak for itself when it cleans itself.  
+> I will let the data speak for itself when it cleans itself.\
 > - Allison Reichel #data
 
-> What all practicing data analysts agree on is that the proportion of project time spent on data cleaning is huge. Estimates of 75-90 percent have been suggested.  
+> What all practicing data analysts agree on is that the proportion of project time spent on data cleaning is huge. Estimates of 75-90 percent have been suggested.\
 > - Unknown, Graphics of Large Datasets, p. 20.
-
-
-
-
 
 ```{r}
 #| label: load-libraries 
@@ -125,24 +121,23 @@ mutate(Species2=Recode(Species,"'versicolor'='setosa'")) ->iris
 
 # Exercises
 
-::: {.callout-note}
-
+::: callout-note
 ## Exercise 1
 
-1.  Use the `read_excel()` command to read in the file `data/salaries_scrambled.xlsx`
+1.  Use the `read_excel()` command to read in the file `course_data/salary_scrambled.xlsx`
 2.  Save it as `salaries`
-
 :::
 
 ```{r}
 #| label: read-data
+#| echo: false
+#| purl: false
 
-salaries<-read_excel(path=here("data/salaries_scrambled.xlsx"))
+salaries<-read_excel(path=here("../course_data/salary_data_scrambled.xlsx"))
 
 ```
 
 ::: {#note-inspect .callout-note}
-
 ## Exercise 2
 
 1.  Inspect the `salaries` data frame.
@@ -159,41 +154,37 @@ salaries<-read_excel(path=here("data/salaries_scrambled.xlsx"))
 :::
 
 ::: {#note-date .callout-note}
-
 ## Exercise 4
 
-1. Convert the variable that was called `timestamp` into a `Date` class variable in the format YYYY-MM-DD
-
-
+1.  Convert the variable that was called `timestamp` into a `Date` class variable in the format YYYY-MM-DD
 :::
 
-::: {.callout-note}
-
+::: callout-note
 ## Exercise 5
-2. Convert the variable that contains the respondent age into a `factor`
-3. Remove any inappropriate characters
-4. Filter the dataset so that there are no respondents over 65 or under 18
 
+2.  Convert the variable that contains the respondent age into a `factor`
+3.  Remove any inappropriate characters
+4.  Filter the dataset so that there are no respondents over 65 or under 18
 :::
 
-::: {.callout-note}
+::: callout-note
 ## Exercise 6
-1. Examine the variable that contained the respondent's industry.
-2. Convert it to a factor.
-3. Remove any junk characters.
 
+1.  Examine the variable that contained the respondent's industry.
+2.  Convert it to a factor.
+3.  Remove any junk characters.
 :::
 
-::: {.callout-note}
+::: callout-note
 ## Exercise 7
-1. Remove any junk characters from the variable that contained the respondent's salary.
-2. Convert this to a `numeric` variable
 
+1.  Remove any junk characters from the variable that contained the respondent's salary.
+2.  Convert this to a `numeric` variable
 :::
 
-::: {.callout-note}
+::: callout-note
 ## Exercise 8
-1. Remove any junk characters from the variable that contained the respondent's gender.
-2. Convert it to a factor
 
+1.  Remove any junk characters from the variable that contained the respondent's gender.
+2.  Convert it to a factor
 :::
