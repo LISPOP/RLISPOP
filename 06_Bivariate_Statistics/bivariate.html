@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Bivariate Statistics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="bivariate_files/libs/clipboard/clipboard.min.js"></script>
+<script src="bivariate_files/libs/quarto-html/quarto.js"></script>
+<script src="bivariate_files/libs/quarto-html/popper.min.js"></script>
+<script src="bivariate_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="bivariate_files/libs/quarto-html/anchor.min.js"></script>
+<link href="bivariate_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="bivariate_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="bivariate_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="bivariate_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="bivariate_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#bivariate-statistics-or-measurements-of-association" id="toc-bivariate-statistics-or-measurements-of-association" class="nav-link active" data-scroll-target="#bivariate-statistics-or-measurements-of-association">Bivariate Statistics or Measurements of Association</a></li>
+  <li><a href="#import-the-data" id="toc-import-the-data" class="nav-link" data-scroll-target="#import-the-data">Import the data</a></li>
+  <li><a href="#numeric---numeric" id="toc-numeric---numeric" class="nav-link" data-scroll-target="#numeric---numeric">Numeric - Numeric</a></li>
+  <li><a href="#categorical---categorical" id="toc-categorical---categorical" class="nav-link" data-scroll-target="#categorical---categorical">Categorical - Categorical</a>
+  <ul class="collapse">
+  <li><a href="#crosstabulations" id="toc-crosstabulations" class="nav-link" data-scroll-target="#crosstabulations">Crosstabulations</a></li>
+  <li><a href="#exporting-tables" id="toc-exporting-tables" class="nav-link" data-scroll-target="#exporting-tables">Exporting Tables</a></li>
+  </ul></li>
+  <li><a href="#categorical---numeric" id="toc-categorical---numeric" class="nav-link" data-scroll-target="#categorical---numeric">Categorical - Numeric</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bivariate Statistics</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="bivariate-statistics-or-measurements-of-association" class="level2">
+<h2 class="anchored" data-anchor-id="bivariate-statistics-or-measurements-of-association">Bivariate Statistics or Measurements of Association</h2>
+<p>Univariate statistics (e.g.&nbsp;mean, median, mode, standard deviation) describe individual variables. We often want to describe the <em>relationship</em> between two variables.</p>
+<p>To understand associations between variables it is <em>essential</em> to understand <em>levels of measurement</em>. This is a concept that is central to statistics and is implemented in R in ways that we have already met. ### Levels of measurement</p>
+<p>In R, if you recall, variables can be of different types: <code>numeric</code>, <code>character</code> or <code>factors</code>. In statistics, the two largest categories of levels of measurements are: numeric and categorical variables.</p>
+<p>Numeric variables can be <em>continuous</em> or <em>discrete</em>. Continuous variables can be subdivided into infinity. Examples include money (e.g.&nbsp;$50.555672828 makes sense), temperature (e.g.&nbsp;24.234575828 C). Discrete variables are also numeric but cannot be meaningfully subdivided into decimals. For example, we might measure how many children a family has. this variable can only ever be integers (e.g.&nbsp;1,2,3,4 or 0).</p>
+<p>Categorical variables cannot be measured in terms of numbers. Examples of this might include a person’s sex (male or female), their field of study (political science or economics) or their province of residence.</p>
+<div class="{tip.callout}">
+<p>Just because provinces are clearly categorical variables, does not stop us from <em>storing</em> them as numbers. The trick is conceptual. Saskatchewan is just different from Alberta, it is not one more than Alberta in the way that $10 is $1 greater than $9.</p>
+<p>In R categorical variables are stored as factors meaning that each response is stored as a number and then a level is mapped to each number. It just saves on memory to do so.</p>
+</div>
+<p>Measuring the association between two variables depends on what level of measurement you are dealing with.</p>
+</section>
+<section id="import-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-the-data">Import the data</h2>
+<p>Let’s import the <code>shs</code> dataset from the <code>course_data</code> subfolder.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tidyverse for lots of stuff</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># here for getting working directories</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># haven for importing datasets</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#labelled to look through large datasets</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(labelled)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#crosstable package for crosstabs</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(crosstable)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>shs<span class="ot">&lt;-</span><span class="fu">read_sav</span>(<span class="fu">here</span>(<span class="st">"../course_data/shs.sav"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lookfor</span>(shs, <span class="st">"province"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> pos variable label     col_type missing values                   
+ 3   Prov     Geography chr+lbl  0       [14] Atlantic provinces  
+                                         [24] Quebec              
+                                         [35] Ontario             
+                                         [46] Manitoba            
+                                         [47] Saskatchewan        
+                                         [48] Alberta             
+                                         [59] British Columbia    
+                                         [63] Territorial capitals</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>shs <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Select income, taxes, dwelling type and housing tenure</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">Income=</span>HH_TotInc, <span class="at">Taxes=</span>TX001,<span class="at">Dwelling=</span>DwelTyp, <span class="at">Tenure=</span>Tenure, <span class="at">Province=</span>Prov)<span class="ot">-&gt;</span>shs_subset</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#glimpse</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 12,492
+Columns: 5
+$ Income   &lt;dbl&gt; 100050, 114250, 52000, 56050, 46500, 133150, 158000, 38300, 3…
+$ Taxes    &lt;dbl&gt; 13500, 21500, 3950, 0, 600, 14700, 27100, 3900, 950, 0, 20500…
+$ Dwelling &lt;chr+lbl&gt; "1", "1", "1", "3", "1", "3", "1", "3", "1", "2", "1", "3…
+$ Tenure   &lt;chr+lbl&gt; "1", "1", "2", "3", "2", "1", "1", "3", "3", "3", "2", "3…
+$ Province &lt;chr+lbl&gt; "14", "24", "47", "63", "14", "59", "35", "48", "14", "14…</code></pre>
+</div>
+</div>
+<p>Note that two of our variables are these <code>chr+lbl</code>. These we need to convert to factors. We can do thise by putting the whole data frame in <code>as_factor</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>shs_subset<span class="ot">&lt;-</span><span class="fu">as_factor</span>(shs_subset)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Compare now</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 12,492
+Columns: 5
+$ Income   &lt;dbl&gt; 100050, 114250, 52000, 56050, 46500, 133150, 158000, 38300, 3…
+$ Taxes    &lt;dbl&gt; 13500, 21500, 3950, 0, 600, 14700, 27100, 3900, 950, 0, 20500…
+$ Dwelling &lt;fct&gt; "Single detached", "Single detached", "Single detached", "Apa…
+$ Tenure   &lt;fct&gt; Owned with mortgage, Owned with mortgage, Owned without mortg…
+$ Province &lt;fct&gt; Atlantic provinces, Quebec, Saskatchewan, Territorial capital…</code></pre>
+</div>
+</div>
+</section>
+<section id="numeric---numeric" class="level2">
+<h2 class="anchored" data-anchor-id="numeric---numeric">Numeric - Numeric</h2>
+<p>To test whether there is a relationship between two numeric variables, we can use the most basic form of <em>correlation</em> the Pearson correlation coefficient.</p>
+<p>It takes an x and a y variable as its arguments. To access these, requires the <code>data_frame$variable_name</code> syntax.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(shs_subset<span class="sc">$</span>Income, shs_subset<span class="sc">$</span>Taxes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9098466</code></pre>
+</div>
+</div>
+<p>A different type of correlation is the Spearman correlation which is meant for ordinal variables (think for example the level of education a person has completed or the job title a person has). These are categories but there is an order to them.</p>
+<p>The spearman’s correlation coefficient is also useful for data that is <em>not normally distributed</em>.</p>
+<p>This code produces two histograms that shows that our two variables are <em>not normally distributed</em>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>shs_subset <span class="sc">%&gt;%</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(Income<span class="sc">:</span>Taxes) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(., <span class="fu">aes</span>(<span class="at">x=</span>value))<span class="sc">+</span><span class="fu">geom_histogram</span>()<span class="sc">+</span><span class="fu">facet_grid</span>(<span class="sc">~</span>name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="bivariate_files/figure-html/income-taxes-histogram-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>So we can specify using the Spearman correlation coefficient in this way.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(shs_subset<span class="sc">$</span>Income, shs_subset<span class="sc">$</span>Taxes, <span class="at">method=</span><span class="fu">c</span>(<span class="st">"spearman"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9332988</code></pre>
+</div>
+</div>
+<p>So, no surprise here, household income is <em>highly</em> correlated with the amount of taxes people pay.</p>
+</section>
+<section id="categorical---categorical" class="level2">
+<h2 class="anchored" data-anchor-id="categorical---categorical">Categorical - Categorical</h2>
+<section id="crosstabulations" class="level3">
+<h3 class="anchored" data-anchor-id="crosstabulations">Crosstabulations</h3>
+<p>We can’t use the same statistics to measure the strength of association between two categorical variables. Instead, we use the chi-squared statistic and Cramer’s V.</p>
+<p>We start with a cross-tab of two categorical variables. The most basic command is <code>table()</code></p>
+<p>Let’s test whether or not there is a relationship between the dwelling type and the tenure of residence (e.g.&nbsp;owned or rented)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Dwelling, shs_subset<span class="sc">$</span>Tenure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                
+                                 Owned with mortgage Owned without mortgage
+  Single detached                               3523                   3552
+  Double, row, terrace or duplex                 575                    357
+  Apartment or other                             429                    364
+                                
+                                 Rented
+  Single detached                   655
+  Double, row, terrace or duplex    926
+  Apartment or other               2111</code></pre>
+</div>
+</div>
+<p>A few things: notice that the variable that is first specified in the <code>table()</code> argument is showed in the rows. The table that is specified second is visible in the columns. Second, notice that these are <em>frequencies</em> i.e.&nbsp;just counts. On the surface of it, we can sort of see that there is a relationship, i.e.&nbsp;that most people wwho live in apartments also rent. But without calculating the percentages it is hard to tell.</p>
+<p>Sometimes reversing the rows and columns can also be informative. When the crosstabulation is created this way we are (I think ) implicitly hypothesizing that the type of home a person lives in dictates the financing. But maybe it is actually the reverse. A person can only afford to rent and so the end up in an apartment rather than a single-detached home.</p>
+<p>We can just reverse the arguments. At the same time, I can also show you the <code>with()</code> argument. It loads the data frame for the following arguments and makes it a bit quicker to run.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(shs_subset, <span class="fu">table</span>(Tenure, Dwelling))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        Dwelling
+Tenure                   Single detached Double, row, terrace or duplex
+  Owned with mortgage               3523                            575
+  Owned without mortgage            3552                            357
+  Rented                             655                            926
+                        Dwelling
+Tenure                   Apartment or other
+  Owned with mortgage                   429
+  Owned without mortgage                364
+  Rented                               2111</code></pre>
+</div>
+</div>
+<p>Notice that this gives us a little bit more information: We also get the variable names printed and that can be helpful!</p>
+<p>To get a table of percentages, we use the command <code>prop.table()</code>.</p>
+<p>Sometimes, we will want to save the <code>table()</code> output in an object and then reuse that.</p>
+<div id="tbl-prop-table" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-prop-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Row percentages of housing tenure and dwelling type.
+</figcaption>
+<div aria-describedby="tbl-prop-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Save the table</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>tab1<span class="ot">&lt;-</span><span class="fu">with</span>(shs_subset, <span class="fu">table</span>(Tenure, Dwelling))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">#print</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>tab1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        Dwelling
+Tenure                   Single detached Double, row, terrace or duplex
+  Owned with mortgage               3523                            575
+  Owned without mortgage            3552                            357
+  Rented                             655                            926
+                        Dwelling
+Tenure                   Apartment or other
+  Owned with mortgage                   429
+  Owned without mortgage                364
+  Rented                               2111</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Wrap in prop.table</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(tab1, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                        Dwelling
+Tenure                   Single detached Double, row, terrace or duplex
+  Owned with mortgage         0.77821957                     0.12701568
+  Owned without mortgage      0.83126609                     0.08354786
+  Rented                      0.17741062                     0.25081257
+                        Dwelling
+Tenure                   Apartment or other
+  Owned with mortgage            0.09476474
+  Owned without mortgage         0.08518605
+  Rented                         0.57177681</code></pre>
+</div>
+</div>
+</figure>
+</div>
+<p>Notice the <code>1</code> in <code>prop.table()</code> It specifies to calculate the proportions <em>by row</em>. Sometimes you will want column percentages in which case you provide a <code>2</code>. And not providing a <code>1</code> or a <code>2</code> provides the corner percentages, meaning the percentage of the whole table that is in each cell.</p>
+<p>In <a href="#tbl-prop-table" class="quarto-xref">Table&nbsp;1</a> we get 57.1% of people who rent living in an apartment with 77% of people who own with a mortgage living in a single, detached home. That certainly seems like there is a relationship. But it’s not a formal test.</p>
+<p>We can do that with the chi-squared test. It takes a table object as its argument</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(tab1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Pearson's Chi-squared test
+
+data:  tab1
+X-squared = 4651.6, df = 4, p-value &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>In this output we get the following information: - the chi-squared statistic is 4651.6 - the degrees of freedom (df) is 4 - the p-value (the probability that a table completely generated at random would generate this variation in cell values) is extremely low, less then 0.00000000000000002.</p>
+<p>So, it is extremely unlikely a table like this would appear by chance alone.</p>
+<p>But that does not tell us whether there is a <em>strong</em> association or not. For this, we can test Cramer’s V. It is in the <code>rcompanion</code> package, please install this if necessary.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("rcompanion")</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rcompanion)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cramerV</span>(tab1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Cramer V 
+  0.4315 </code></pre>
+</div>
+</div>
+<p>This output gives is a Cramer’s V of 0.43, which is a moderate correlation.</p>
+</section>
+<section id="exporting-tables" class="level3">
+<h3 class="anchored" data-anchor-id="exporting-tables">Exporting Tables</h3>
+<p>Exporting crosstabulations of the type that we have been dealing with here is actually a little bit tricky. A lot of times, we want to have a table that produces <em>both</em> the raw counts from a <code>table()</code> command <em>and</em> the percentages from <code>prop.table()</code> but there is no ready-made built-in way to produce that in R. The easiest way to get at that stuff is with the <code>tabyl</code> function in the <code>janitor</code> package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages('janitor')</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Check the help page for the basic syntax.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>?tabyl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We provide the <code>data</code> and then the columns that we want to tabulate.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(shs_subset, Tenure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 Tenure    n   percent
+    Owned with mortgage 4527 0.3623919
+ Owned without mortgage 4273 0.3420589
+                 Rented 3692 0.2955492</code></pre>
+</div>
+</div>
+<p>Notice that we get both the counts of each category <em>and</em> the proportions (in decimal format). We can convert those to percentages with some <code>adorn_*</code> functions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(shs_subset, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_pct_formatting</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 Tenure    n percent
+    Owned with mortgage 4527   36.2%
+ Owned without mortgage 4273   34.2%
+                 Rented 3692   29.6%</code></pre>
+</div>
+</div>
+<p>The best way to export this output is to use the <code>flextable()</code> package. We pipe the output of <code>tabyl)</code> to <code>as_flextable()</code></p>
+<p>Multiple formats are available:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.package('flextable')</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(flextable)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Save the flextable as crosstab1</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(shs_subset, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_pct_formatting</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_flextable</span>()<span class="ot">-&gt;</span>tabyl1</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Save crosstab1 as an html file</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_html</span>(tabyl1, <span class="at">path=</span><span class="fu">here</span>(<span class="st">"table1.html"</span>))</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co"># save as word document </span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_docx</span>(tabyl1, <span class="at">path=</span><span class="st">"table1.docx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can also specify two variables to come up with a crosstabulation of two variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(shs_subset, Dwelling, Tenure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached                3523                   3552
+ Double, row, terrace or duplex                 575                    357
+             Apartment or other                 429                    364
+ Rented
+    655
+    926
+   2111</code></pre>
+</div>
+</div>
+<p>It’s not that hard to get the percentages and the counts in one table.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabyl</span>(shs_subset, Dwelling, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_percentages</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached           0.4557568              0.4595084
+ Double, row, terrace or duplex           0.3094726              0.1921421
+             Apartment or other           0.1477273              0.1253444
+    Rented
+ 0.0847348
+ 0.4983854
+ 0.7269284</code></pre>
+</div>
+</div>
+<p>By default those return the row percentages, but we can get the column percentages by using the <code>denominator</code> argument.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>tabyl1<span class="ot">&lt;-</span><span class="fu">tabyl</span>(shs_subset, Dwelling, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_percentages</span>(<span class="at">denominator=</span><span class="st">"col"</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co">#print</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>tabyl1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached          0.77821957             0.83126609
+ Double, row, terrace or duplex          0.12701568             0.08354786
+             Apartment or other          0.09476474             0.08518605
+    Rented
+ 0.1774106
+ 0.2508126
+ 0.5717768</code></pre>
+</div>
+</div>
+<p>Then we can format those percentages to be a bit neater <em>and</em> add the n’s back in. Note, that this <em>must</em> happe in a particular order. First, the percentages must be formatted, then the n’s added back in.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>tabyl1<span class="ot">&lt;-</span><span class="fu">tabyl</span>(shs_subset, Dwelling, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add the column percentages</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_percentages</span>(<span class="at">denominator=</span><span class="st">"col"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Format the percentages neatly</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  adorn_pct_formatting <span class="sc">%&gt;%</span> </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add the ns back in </span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_ns</span>()</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="co">#print </span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>tabyl1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached       77.8% (3,523)          83.1% (3,552)
+ Double, row, terrace or duplex       12.7%   (575)           8.4%   (357)
+             Apartment or other        9.5%   (429)           8.5%   (364)
+        Rented
+ 17.7%   (655)
+ 25.1%   (926)
+ 57.2% (2,111)</code></pre>
+</div>
+</div>
+<p>WE can also add row and column totals for extra infromation</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>tabyl1<span class="ot">&lt;-</span><span class="fu">tabyl</span>(shs_subset, Dwelling, Tenure) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add the totals</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_totals</span>(<span class="st">"both"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add the column percentages</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_percentages</span>(<span class="at">denominator=</span><span class="st">"col"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Format the percentages neatly</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_pct_formatting</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Add the ns back in </span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_ns</span>() </span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co">#print</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>tabyl1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached       77.8% (3,523)          83.1% (3,552)
+ Double, row, terrace or duplex       12.7%   (575)           8.4%   (357)
+             Apartment or other        9.5%   (429)           8.5%   (364)
+                          Total      100.0% (4,527)         100.0% (4,273)
+         Rented           Total
+  17.7%   (655)  61.9%  (7,730)
+  25.1%   (926)  14.9%  (1,858)
+  57.2% (2,111)  23.2%  (2,904)
+ 100.0% (3,692) 100.0% (12,492)</code></pre>
+</div>
+</div>
+<p><code>tabyl()</code> can also create a three-way table. Let’s see if we can the relationship between housing dwelling and housing tenure changes by province. Do make this simpler, let’s just compare Ontario and Quebec.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>tabyl2<span class="ot">&lt;-</span>shs_subset <span class="sc">%&gt;%</span> </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Just filter the provinces of Ontario and Quebec</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Province<span class="sc">==</span><span class="st">"Ontario"</span><span class="sc">|</span>Province<span class="sc">==</span><span class="st">"Quebec"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Make the tabyl with Dwelling, Tenure and province</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabyl</span>(., Dwelling, Tenure, Province) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Add the percentages</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_percentages</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#format the percentages</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  adorn_pct_formatting <span class="sc">%&gt;%</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#add the ns</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_ns</span>()</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>tabyl2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$Quebec
+                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached         53.0% (409)            41.2% (318)
+ Double, row, terrace or duplex         32.6%  (77)            25.8%  (61)
+             Apartment or other         12.5%  (77)             7.6%  (47)
+      Rented
+  5.7%  (44)
+ 41.5%  (98)
+ 79.9% (492)
+
+$Ontario
+                       Dwelling Owned with mortgage Owned without mortgage
+                Single detached         43.7% (414)            48.7% (462)
+ Double, row, terrace or duplex         43.8% (123)            20.3%  (57)
+             Apartment or other          8.8%  (36)            12.7%  (52)
+      Rented
+  7.6%  (72)
+ 35.9% (101)
+ 78.4% (320)</code></pre>
+</div>
+</div>
+<p>Exporting a <code>tabyl</code> is a lot easier than exporting a <code>table()</code> or <code>prop.table()</code>. It’s one of the major reasons I use it. There are three leading packages that export output from R into something useable: <code>knitr</code> and <code>kableExtra</code> combined, <code>gt</code> and <code>flextable</code>. I’m going to suggest we use <code>flextable</code>. First we have to convert the tabyl we want to save to a <code>flextable</code> object with <code>as_flextable</code> then we can use a series of <code>save_as_*</code> functions to save it out.</p>
+<p>WE can save it as an html file, a docx or a powerpoint. Or even an image like a jpeg.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages('flextable')</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(flextable)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>tabyl1<span class="ot">&lt;-</span>tabyl1 <span class="sc">%&gt;%</span> </span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Convert to flextable</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_flextable</span>()</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="co">#save as html</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_html</span>(tabyl1, <span class="at">path=</span><span class="fu">here</span>(<span class="st">"tabyl1.html"</span>))</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="co">#save as png</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_image</span>(tabyl1, <span class="at">path=</span><span class="fu">here</span>(<span class="st">"tabyl1.png"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "/Users/skiss/Library/CloudStorage/OneDrive-WilfridLaurierUniversity/Courses/RLISPOP/06_Bivariate_Statistics/tabyl1.png"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#save as powerpoint</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_pptx</span>(tabyl1, <span class="at">path=</span><span class="fu">here</span>(<span class="st">"tabyl1.pptx"</span>))</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="co">#save as docx</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save_as_docx</span>(tabyl1, <span class="at">path=</span><span class="fu">here</span>(<span class="st">"tabyl1.docx"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="categorical---numeric" class="level2">
+<h2 class="anchored" data-anchor-id="categorical---numeric">Categorical - Numeric</h2>
+<p>I think there are some measures of association between a categorical variable and numeric variables, but, honestly, the best way tot ackle that is with the linear model or OLS regression, which is coming up.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
