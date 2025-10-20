@@ -902,4 +902,108 @@ shs_subset %>%
 
 Notice how that was a heck of a lot less typing. 
 
+# Pivotting and Tidy Data
+
+In some ways I should have started this tutorial with this concept but I had reasons. One of the major innovations of the tidyverse is that it is tightly linked to and privileges the concept of `tidy` data. Datasets are made up of values (qualitative or quantitative). And each value belongs to a variable and to an observation. A dataset of my family members' ages would have the value of 49 for my row (along with all the other values of other observations *of me*) and under the column of `age`. 
+
+Here is an example of an untidy dataset. 
+
+```{r}
+#| label:
+
+library(tibble)
+classroom <- tribble(
+  ~name,    ~quiz1, ~quiz2, ~test1,
+  "Billy",  NA,     "D",    "C",
+  "Suzy",   "F",    NA,     NA,
+  "Lionel", "B",    "C",    "B",
+  "Jenny",  "A",    "A",    "B"
+  )
+classroom
+```
+
+To be honest, this is a fine way of storing data, but it could be stored in an even tidier way. 
+
+```{r}
+#| label: pivot-tidy
+classroom %>% 
+  pivot_longer(quiz1:test1, names_to="assessment", values_to=c("grade"))->classroom_tidy
+classroom_tidy
+```
+Arguably this is even tidier. What have we done in this example: 
+
+We have observed four students three times, giving us 12 distinct observations, so we should have 12 rows, and we do. And each observation consists of three different measurements: the student's name, the student's assessment and the recorded grade. And so there are three columns. 
+
+Sometimes it can be hard to figure out what exactly is a variable and what exactly is an observation *and that's OK*. For example, if we had measured students' height and weight, we might not have been comfortable storing both of those on the same column. But, as we will see in the section on data visualization, sometimes we will want those variables stored in one column to facilitate quick and easy data visualization of multiple variables. 
+
+The key verbs that facilitate reshaping data are `pivot_longer()` and `pivot_wider`. 
+
+```{r}
+#| label: pivot-example
+
+#look for variables in the shs that have `income` in their value.
+lookfor(shs,"income")
+shs %>% 
+  #Select all the variables that end with the phrase TotInc. Take prov as well and rename Province
+  select(ends_with("TotInc")) %>% 
+  #run as_factor for the province variable
+  # store in shs_subset
+  as_factor()->shs_subset
+#glimpse
+glimpse(shs_subset)
+```
+
+Now we have four different measures of income: the respondent's income, the spouse's income, the income of anyone else in the household and the total household income.
+
+Mostly I would say this is fine and tidy data. But in another way, it is not tidy. At another level we observe each household four different times (four measures of income). But multiple values of a similar attribute (e.g. income) are spread across multiple columns.  A general rule of thumb is that it is easier to describe functional relationships between variables (e.g., z is a linear combination of x and y, density is the ratio of weight to volume) than between rows, and it is easier to make comparisons between groups of observations (e.g., average of group a vs. average of group b) than between groups of columns. 
+
+So, here, if we wanted to calculate the average of each type of income, we will have a hard time. If we could turn these columns of income into rows, then we could calculate the averages quite quickly. 
+
+So right now, these data are *wide*. We would like to pivot them to be *long*. 
+
+To do so we will need to use the `pivot_longer()` command. The most important argument is `cols`  where we specify which columns we want to pivot. 
+There are multiple ways to do it. 
+
+- By position 
+
+```{r}
+#| label: pivot-cols-by-position
+shs_subset %>% 
+  pivot_longer(data=., cols=1:4)
+```
+
+- Or by range of names
+```{r}
+#| label: pivot-cols-by-name
+shs_subset %>% 
+  pivot_longer(data=., cols=RP_TotInc:HH_TotInc)
+```
+
+- Or by those `select()` helpers.
+
+```{r}
+#| label: pivot-cols-by-select
+shs_subset %>% 
+  pivot_longer(data=., cols=ends_with("Inc"))->shs_subset_long
+#Check it out. 
+head(shs_subset_long)
+
+```
+
+Additional arguments to `pivot_longer()` allow us to specify the names of the two columns. 
+
+```{r}
+#| label: specify-names
+shs_subset %>% 
+  pivot_longer(data=., cols=ends_with("Inc"), names_to=c("Income"), values_to=c("Dollars"))->shs_subset_long
+```
+
+Now we can quickly use the `Income` variable as a grouping variable to cacluate the average `Dollars`
+```{r}
+#| label: calculate-average
+shs_subset_long %>% 
+  group_by(Income) %>% 
+  summarise(avg=mean(Dollars))
+```
+
 
