@@ -388,6 +388,118 @@ save_as_docx(tabyl1, path=here("tabyl1.docx"))
 
 ## Categorical - Numeric
 
-I think there are some measures of association between a categorical variable and numeric variables, but, honestly, the best way tot ackle that is with the linear model or OLS regression, which is coming up. 
+There is no real test of association between a categorical and a numeric variable. Instead, we normally test for differences in means between the groups of the categorical variable. 
 
+When we have a categorical variable with *two* categories as an independent variable and a *numeric* variable as the dependent variable, we can use the *t-test* for the differences in group means. 
+
+In our `shs_subset` dataset we have the variable `Tenure` which has three categories:
+```{r}
+#| label: tbl-tenure
+#| tbl-cap: "Responses to the question of housing tenure."
+table(shs_subset$Tenure)
+
+```
+
+Let's reduce this to two categories so that we can use it for the t-test.
+
+```{r}
+#| label: recode-tenure
+library(car)
+shs_subset %>% 
+  mutate(Tenure2=Recode(Tenure, "'Owned with mortgage'='Owned'; 'Owned without mortgage'='Owned'", levels=c("Owned", "Rented")))->shs_subset
+#Check
+table(shs_subset$Tenure2)
+
+```
+
+Now we can compare the average income of owners with the average income of renters using the *t-test*. This is the formula. 
+$$ t= \frac{\overline{x_1}-\overline{x_2}}{\sqrt{\frac{s^2_1}{n_1}+\frac{s^2_2}{n_2}}} $$ 
+
+If we look at the top of the fraction we see a term that subtracts the average of group 2 from the average of group 1, so we just subtract the mean of group one from the mean of the other. 
+
+But then we divide that difference in average by something. Specifically, underneath the square root we have this:
+
+$$ \frac{s^2_1}{n_1}+\frac{s^2_2}{n_2}$$
+
+These compare the *variance* (which is the square root of the standard deviation) of group 1 divided by the sample size of group 1 and we add the *variance* of group 2 divided by the sample size of group 2. This gives us a ratio of the difference in group means divided by how much overall dispersion there is in the *whole sample*. 
+
+The number that is spit out a the end is a $$t$$-statistic. This number comes from a statistical distribution of variables that was discovered by a William Gossett, who worked at the Guiness Brewery in Dublin. He noticed that taking *random samples* from a population resulted in a distribution of values that were *almost, but not quite,* normal. Where the normal distribution the $$t$$ distribution is *slightly* different, but when the sample size is > 30, the differences are miniscule. The following graph shows the distribution of $$ t $$ scores. 
+
+One other piece of information that is necessary: the distribution of t-scores depends on the sample size, which is expressed in the term *degrees of freedom*. Larger samples have larger degrees of freedom, smaller samples have smaller degrees of freedom. 
+
+
+
+In a completely random process, with the number of degrees of freedom that match what our example will be, t-scores are distributed as in @fig-t-distribution.
+
+
+```{r echo=F}
+#| label: fig-t-distribution
+#| fig-cap: Distribution of t-scores from a random number generatig process.
+ggplot(data=data.frame(x=seq(-3,3,1)), aes(x))+
+  stat_function(fun=dt, geom="line", args=list(df=10471))+
+  stat_function(fun=dt, geom="area", fill="lightgrey", xlim=c(-1,1),args=list(df=10471))+
+   stat_function(fun=dt, geom="area", fill="darkgrey", xlim=c(-1,-2),args=list(df=10471))+
+     stat_function(fun=dt, geom="area", fill="darkgrey", xlim=c(1,2),args=list(df=10471))+
+       stat_function(fun=dt, geom="area", fill="black", xlim=c(2,4),args=list(df=10471))+
+         stat_function(fun=dt, geom="area", fill="black", xlim=c(-2,-4),args=list(df=10471))+
+  labs(x="T-Score", y="Probability")+theme_bw()+scale_x_continuous(breaks=seq(-3,3,1))
+
+
+
+
+```
+
+
+Notice that t-scores higher than 3 or below -3 are *extremely* unlikely in a completely random process. This is what we use to test the hypotheses that group means in a sample are generated completely randomly or are the product of a real process. Effectively the logic runs like this: The probability of getting a t-score above 3 in a universe where there was no relationship between my independent and my dependent variable is *very low*; it would be in the tail region above 3. Therefore I conclude that it was *not* a random generation process and that in fact there *is* a relationship between my independent and my dependent variable.
+
+Now, to run the t-test, we simply use the command `t.test(dependent_variable ~ independent_variable, data=data_frame)`
+Note that in R the `~` represents a `formula` object. What is on the left-hand side is the *dependent variable* and what is on the right-hand side is the independent variable. 
+
+In this case, our dependent variable is the numeric variable (`Income`) and the *independent* variable is the categorical variable, `Tenure2`. So what we are doing is testing the hypothesis that there is *no* difference in average income between owners and renters. 
+
+So the syntax looks like this: 
+
+```{r}
+#| label: actual-t-test
+
+t.test(Income~Tenure2, data=shs_subset)
+
+```
+
+We get a lot of information here, let's go through it. First, we get a t-score of 47.288 on the 10471 degrees of freedom. We can actually draw the line of where that t-score is on the distribution above in @fig-t-distribution. 
+
+```{r echo=F}
+#| label: fig-t-distribution-2
+#| fig-cap: Distribution of t-scores from a random number generatig process.
+ggplot(data=data.frame(x=seq(-50,50,1)), aes(x))+
+  stat_function(fun=dt, geom="line", args=list(df=10471))+
+  stat_function(fun=dt, geom="area", fill="lightgrey", xlim=c(-1,1),args=list(df=10471))+
+   stat_function(fun=dt, geom="area", fill="darkgrey", xlim=c(-1,-2),args=list(df=10471))+
+     stat_function(fun=dt, geom="area", fill="darkgrey", xlim=c(1,2),args=list(df=10471))+
+       stat_function(fun=dt, geom="area", fill="black", xlim=c(2,4),args=list(df=10471))+
+         stat_function(fun=dt, geom="area", fill="black", xlim=c(-2,-4),args=list(df=10471))+
+  labs(x="T-Score", y="Probability")+theme_bw()+scale_x_continuous(breaks=seq(-50,50,1))+
+  geom_vline(xintercept=47.288, col="darkred", linewidth=2, linetype=2)
+
+
+
+
+```
+
+See where that red line is? *A whole series of t-scores generated from random samples of a world where there were no relationship between tenure and household income would be distributed like in the graph below. And red line indicates where this particular sample lands. You can see it is very improbable that you would get a sample like this in a world where there was no relationship*. Therefore we conclude that there *is* in fact a relationship. 
+
+And that makes perfect sense.  
+
+## Exercises 
+
+::: {note.callout}
+1. Use the `lookfor()` command to find the variable that represents `spousal income`  `respondent income` and `sex` and `dwelling tenure`
+2. Use the `select()` command to select only those four variables. Rename each variable in the `select()` command with useful and informative names. Avoid whitespace.
+3. Save the dataframe of these four variables into a smaller dataframe with a name of your choice.
+4. Correlate `respondent_income` with `spousal_income`.
+5. Create a cross-tab of `sex` and `housing_tenure` using the `table()` command.
+6. Perform a chisq-test to test whether or not there is a difference in whether female respondents and male respondents report different housing tenures.
+7. Conduct a t-test of whether or not females and males report different respondent incomes. 
+ 
+:::
 

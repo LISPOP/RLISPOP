@@ -68,6 +68,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="bivariate_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="bivariate_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -88,6 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#exporting-tables" id="toc-exporting-tables" class="nav-link" data-scroll-target="#exporting-tables">Exporting Tables</a></li>
   </ul></li>
   <li><a href="#categorical---numeric" id="toc-categorical---numeric" class="nav-link" data-scroll-target="#categorical---numeric">Categorical - Numeric</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul>
 </nav>
 </div>
@@ -534,7 +564,110 @@ $Ontario
 </section>
 <section id="categorical---numeric" class="level2">
 <h2 class="anchored" data-anchor-id="categorical---numeric">Categorical - Numeric</h2>
-<p>I think there are some measures of association between a categorical variable and numeric variables, but, honestly, the best way tot ackle that is with the linear model or OLS regression, which is coming up.</p>
+<p>There is no real test of association between a categorical and a numeric variable. Instead, we normally test for differences in means between the groups of the categorical variable.</p>
+<p>When we have a categorical variable with <em>two</em> categories as an independent variable and a <em>numeric</em> variable as the dependent variable, we can use the <em>t-test</em> for the differences in group means.</p>
+<p>In our <code>shs_subset</code> dataset we have the variable <code>Tenure</code> which has three categories:</p>
+<div id="tbl-tenure" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tenure-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Responses to the question of housing tenure.
+</figcaption>
+<div aria-describedby="tbl-tenure-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Tenure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+   Owned with mortgage Owned without mortgage                 Rented 
+                  4527                   4273                   3692 </code></pre>
+</div>
+</div>
+</figure>
+</div>
+<p>Let’s reduce this to two categories so that we can use it for the t-test.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>shs_subset <span class="sc">%&gt;%</span> </span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Tenure2=</span><span class="fu">Recode</span>(Tenure, <span class="st">"'Owned with mortgage'='Owned'; 'Owned without mortgage'='Owned'"</span>, <span class="at">levels=</span><span class="fu">c</span>(<span class="st">"Owned"</span>, <span class="st">"Rented"</span>)))<span class="ot">-&gt;</span>shs_subset</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Check</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(shs_subset<span class="sc">$</span>Tenure2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Owned Rented 
+  8800   3692 </code></pre>
+</div>
+</div>
+<p>Now we can compare the average income of owners with the average income of renters using the <em>t-test</em>. This is the formula. <span class="math display">\[ t= \frac{\overline{x_1}-\overline{x_2}}{\sqrt{\frac{s^2_1}{n_1}+\frac{s^2_2}{n_2}}} \]</span></p>
+<p>If we look at the top of the fraction we see a term that subtracts the average of group 2 from the average of group 1, so we just subtract the mean of group one from the mean of the other.</p>
+<p>But then we divide that difference in average by something. Specifically, underneath the square root we have this:</p>
+<p><span class="math display">\[ \frac{s^2_1}{n_1}+\frac{s^2_2}{n_2}\]</span></p>
+<p>These compare the <em>variance</em> (which is the square root of the standard deviation) of group 1 divided by the sample size of group 1 and we add the <em>variance</em> of group 2 divided by the sample size of group 2. This gives us a ratio of the difference in group means divided by how much overall dispersion there is in the <em>whole sample</em>.</p>
+<p>The number that is spit out a the end is a <span class="math display">\[t\]</span>-statistic. This number comes from a statistical distribution of variables that was discovered by a William Gossett, who worked at the Guiness Brewery in Dublin. He noticed that taking <em>random samples</em> from a population resulted in a distribution of values that were <em>almost, but not quite,</em> normal. Where the normal distribution the <span class="math display">\[t\]</span> distribution is <em>slightly</em> different, but when the sample size is &gt; 30, the differences are miniscule. The following graph shows the distribution of <span class="math display">\[ t \]</span> scores.</p>
+<p>One other piece of information that is necessary: the distribution of t-scores depends on the sample size, which is expressed in the term <em>degrees of freedom</em>. Larger samples have larger degrees of freedom, smaller samples have smaller degrees of freedom.</p>
+<p>In a completely random process, with the number of degrees of freedom that match what our example will be, t-scores are distributed as in <a href="#fig-t-distribution" class="quarto-xref">Figure&nbsp;1</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-t-distribution" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-t-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="bivariate_files/figure-html/fig-t-distribution-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-t-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Distribution of t-scores from a random number generatig process.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Notice that t-scores higher than 3 or below -3 are <em>extremely</em> unlikely in a completely random process. This is what we use to test the hypotheses that group means in a sample are generated completely randomly or are the product of a real process. Effectively the logic runs like this: The probability of getting a t-score above 3 in a universe where there was no relationship between my independent and my dependent variable is <em>very low</em>; it would be in the tail region above 3. Therefore I conclude that it was <em>not</em> a random generation process and that in fact there <em>is</em> a relationship between my independent and my dependent variable.</p>
+<p>Now, to run the t-test, we simply use the command <code>t.test(dependent_variable ~ independent_variable, data=data_frame)</code> Note that in R the <code>~</code> represents a <code>formula</code> object. What is on the left-hand side is the <em>dependent variable</em> and what is on the right-hand side is the independent variable.</p>
+<p>In this case, our dependent variable is the numeric variable (<code>Income</code>) and the <em>independent</em> variable is the categorical variable, <code>Tenure2</code>. So what we are doing is testing the hypothesis that there is <em>no</em> difference in average income between owners and renters.</p>
+<p>So the syntax looks like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(Income<span class="sc">~</span>Tenure2, <span class="at">data=</span>shs_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Welch Two Sample t-test
+
+data:  Income by Tenure2
+t = 47.288, df = 10471, p-value &lt; 2.2e-16
+alternative hypothesis: true difference in means between group Owned and group Rented is not equal to 0
+95 percent confidence interval:
+ 45165.95 49072.33
+sample estimates:
+ mean in group Owned mean in group Rented 
+           100624.88             53505.74 </code></pre>
+</div>
+</div>
+<p>We get a lot of information here, let’s go through it. First, we get a t-score of 47.288 on the 10471 degrees of freedom. We can actually draw the line of where that t-score is on the distribution above in <a href="#fig-t-distribution" class="quarto-xref">Figure&nbsp;1</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-t-distribution-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-t-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="bivariate_files/figure-html/fig-t-distribution-2-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-t-distribution-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Distribution of t-scores from a random number generatig process.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>See where that red line is? <em>A whole series of t-scores generated from random samples of a world where there were no relationship between tenure and household income would be distributed like in the graph below. And red line indicates where this particular sample lands. You can see it is very improbable that you would get a sample like this in a world where there was no relationship</em>. Therefore we conclude that there <em>is</em> in fact a relationship.</p>
+<p>And that makes perfect sense.</p>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<div class="{note.callout}">
+<ol type="1">
+<li>Use the <code>lookfor()</code> command to find the variable that represents <code>spousal income</code> <code>respondent income</code> and <code>sex</code> and <code>dwelling tenure</code></li>
+<li>Use the <code>select()</code> command to select only those four variables. Rename each variable in the <code>select()</code> command with useful and informative names. Avoid whitespace.</li>
+<li>Save the dataframe of these four variables into a smaller dataframe with a name of your choice.</li>
+<li>Correlate <code>respondent_income</code> with <code>spousal_income</code>.</li>
+<li>Create a cross-tab of <code>sex</code> and <code>housing_tenure</code> using the <code>table()</code> command.</li>
+<li>Perform a chisq-test to test whether or not there is a difference in whether female respondents and male respondents report different housing tenures.</li>
+<li>Conduct a t-test of whether or not females and males report different respondent incomes.</li>
+</ol>
+</div>
 </section>
 
 </main>
