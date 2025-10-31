@@ -1,0 +1,1196 @@
+---
+title: "Data Visualization 1"
+author: "Simon J. Kiss"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: true 
+    toc_float: true
+---
+
+```{r setup, include=FALSE, echo=F}
+knitr::opts_chunk$set(echo = TRUE, warning=F, message=F)
+
+```
+
+
+```{r define-output-lines, echo=F}
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+   lines <- options$output.lines
+   if (is.null(lines)) {
+     return(hook_output(x, options))  # pass to default hook
+   }
+   x <- unlist(strsplit(x, "\n"))
+   more <- "..."
+   if (length(lines)==1) {        # first n lines
+     if (length(x) > lines) {
+       # truncate the output, but add ....
+       x <- c(head(x, lines), more)
+     }
+   } else {
+     x <- c(if (abs(lines[1])>1) more else NULL, 
+            x[lines], 
+            if (length(x)>lines[abs(length(lines))]) more else NULL
+           )
+   }
+   # paste these lines together
+   x <- paste(c(x, ""), collapse = "\n")
+   hook_output(x, options)
+ })
+```
+# Introduction
+
+## Load libraries
+
+```{r load-libraries}
+library(tidyverse)
+library(here)
+library(muckrakr)
+library(readxl)
+library(knitr)
+```
+
+## Data Import
+
+```{r load-data, output.lines=20}
+results<-read_excel(path=here("data/eqao.xlsx"))
+glimpse(results)
+
+
+```
+
+We need to rename some of these variables and remove some `\%` characters. 
+
+```{r rename-variables}
+results %>% 
+mutate(across(.cols=contains('Percentage'),.fns=function(x) str_remove_all(x, "%"))) %>% 
+  mutate(across(.cols=contains('Change'),.fns=function(x) str_remove_all(x, "%"))) %>% 
+  mutate(across(.cols=contains("Percentage"), .fns=as.numeric)) %>% 
+  mutate(across(.cols=contains("Change"), .fns=as.numeric)) ->scores
+names(scores)
+scores %>% 
+  rename(ESL=25, FSL=26, parents_non_english=27, parents_non_french=28,
+         percent_special_education=29, percent_gifted=30, percent_grade_3_reading=31, delta_grade_3_reading=32, percent_grade_3_writing=33, delta_grade_3_writing=34, percent_grade_3_math=35, delta_grade_3_math=36, Percent_grade_6_reading=37, delta_grade_6_reading=38, percent_grade_6_writing=39, delta_grade_6_writing=40, percent_grade_6_math=41, delta_grade_6_math=42, 
+         percent_grade_9_academic_math=43, delta_grade_9_academic_math=44, percent_grade_9_applied_math=45, delta_grade_9_applied_math=46, percent_grade_10_literacy_first_attempt=47, delta_grade_10_literacy_first_attempt=48, percent_kids_low_income=49, percent_parents_no_degree=50)->scores
+
+
+scores %>% 
+  filter(str_detect(`Board Type`, "Prot|Sec Sch|Public School Board|Provincial", negate=T)) ->scores
+
+```
+
+
+# The syntax of ggplot()
+
+The basic syntax of ggplot2 is universal throughtout the whole library. It looks like this:
+
+`ggplot(data=name_of_data_frame, mapping=aes(x=name_of_x_variable, y=name_of_y_variable))+geom_*`
+
+So what are we looking at here: 
+1. The first part is the call to `ggplot()`. It requires a `data` argument, which must be a data frame. If you pipe a dataset to it, you an replace the argument with a . So hypothetically, these are equivalent.
+
+```{r ggpplot1, eval=F}
+ggplot(data=dat, aes(x=x, y=y))
+dat %>% 
+  ggplot(., data=., aes(x=x, y=y))
+```
+2. Inside the `ggplot()` call, it is necessary to define the `mapping` of the plot. This specifies which variable in the data frame is mapped to which feature of the graph. In the simplest form of a one-variable graph, like a histogram,only an x- is specified.
+Note, that it is possible to only specify a y- variable, for the case of a bar graph that is set horizontally.
+
+In theory, `aes()` is set to a `mapping` argument, i.e. 
+
+```{r ggplot2, eval=F}
+dat %>% 
+  ggplot(., mapping=aes(x=x, y=y))
+```
+
+However, because R matches arguments by position as well, as long as you put the mapping *after* the data argument, you don't need to worry about typing the `mapping=`.  I *never* do this anymore. So this is fine:
+
+```{r ggplot3, eval=F}
+dat %>% 
+  ggplot(., aes(x=x, y=y))
+```
+
+Here, isalso where we also specify grouping (third or fourth or figth variables) mapped to the aesthetic features of a graph, such as thickness, color, fill, point shape, point size, transparency, etc. 
+
+3. Lastly, it is necessary to add a `geom` to the graph, connected to the main call with a `+`. Note that the `+` functions sort of like the `%>%` character in the rest of the `tidyverse`. The difference is explained by the fact that `ggplot` was developed *before* the `tidyverse`.
+
+This effectively specifies the way to represent the mappings in a geometric feature (e.g. point, shape, line, bar).
+
+A full list of `geoms` is available here: [](https://ggplot2.tidyverse.org/reference/). 
+
+Note they range from the standard: `geom_line()`, `geom_point()`, `geom_bar()` to the more surprising, e.g. `geom_text()` for text labels, `geom_abline()` for a straight vertical or horizontal line. 
+
+```{r ggplot4,eval=F}
+dat %>% 
+  ggplot(., aes(x=x, y=y))+geom_point()
+```
+
+
+# One Variable
+
+
+Sometimes we want to visualize the *distribution* of *one* variable. 
+
+
+## Histograms
+
+A histogram is a classic and important graph design to visualize the distribution of values for a *numeric* variable. It can answer a lot of different questions such as: 
+
+- are values of a variable clustered around an average, or are they spread out quite a bit?
+- Are there any outlier instances of a variable that are worth looking at? 
+
+```{r histogram1}
+
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()
+```
+
+We can also run the same code in some of the classic `tidyverse` syntax where we pipe data right to `ggplot()`
+Sometimes I do this, and sometimes I don't; it really depends. 
+
+```{r histogram2}
+scores %>% 
+ggplot(., aes(x=percent_grade_9_academic_math))+geom_histogram()
+```
+
+We can also save plots in objects and then modify them later. 
+
+```{r histogram3}
+#Save in histogram1
+histogram1<-ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()
+#Now print. 
+histogram1
+```
+
+We'll see how we can use this feature in the next section. 
+
+## Density Plots
+
+Another example of a type of plot that shows the distribution of a variable is a `density` plot. This is a *smoothed* version of a histogram. In these graphs, the y-axis value is *not* the number of instances of a variable in a bin, but the probability that a variable takes on the value at that y-axis or less. 
+
+```{r density-plot}
+
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_density()
+```
+
+## Bar graphs 
+
+Note that the histogram and the density plot only work with. You may have a categorical variable that you wish to show. Remember categorical variables have categories as values. In this instances we have the variable `School Type` which gives us a the value of whether or not a board is Catholic or Public. What if we would like to show the distribution of these *categories*. 
+
+```{r bar1, output.lines=1:20}
+#Check the names
+names(scores)
+#Print the values of Board Type just to check
+scores$`Board Type`
+```
+
+Note a very important feature here: we do *not* have the actual counts of public and catholic schools. In this instance, we can pass `School Type` right to `ggplot()` and it will count the groups for us. 
+
+```{r bar2}
+ggplot(scores ,aes(x=`Board Type`))+geom_bar()
+```
+
+In many other instances, we *will* have the counts. In this instance, we use a different function for making a bar graph. 
+
+```{r bar3}
+scores %>% 
+  group_by(`Board Type`) %>% 
+  summarize(count=n())
+
+```
+
+Now that we have the groups that show the counts, we can make a bar graph. Note the differences below. First, although the `x-axis` variable is the same i.e. `School Type`, but note that we also have a variable that contains the counts. So we actually need to specify a `y variable`. And we use the variable name `count` which we set in the `summarize` function. 
+
+```{r bar4}
+scores %>% 
+  group_by(`Board Type`) %>% 
+  summarize(count=n()) %>% 
+  ggplot(., aes(x=`Board Type`, y=count))+geom_col()
+
+
+```
+
+> **PRO-TIP**  
+> `geom_bar()` is for when you have no counts to specify the height of the bar graph's bars. `geom_col()` is when you *do* have a column that can specify the heights of the bars.
+
+#### Bar graphs of percents
+
+Notice above that we had *counts* of in certain boards, but what if we want to have *percent* of schools in certain boards. This is an extremely common problem so it is worth focussing how to get it right here.
+
+Recall this code gives us the number of schools in each type of board. 
+
+```{r count-schools-by-board}
+scores %>% 
+  group_by(`Board Type`) %>% 
+  summarize(count=n())
+```
+
+
+What we need is a column to the right of the `count` column that is the percentage each row makes up of the total.  The first go was a `summarize` function, but now we need to `mutate` those values to be percentages.
+
+```{r calculate-percentages}
+scores %>% 
+  group_by(`Board Type`) %>% 
+  summarize(count=n()) %>% 
+  mutate(percent=count/sum(count))
+```
+
+Now we have the percentages! So roughly 33\% of schools in Ontario are in Catholic school boards. So what if we want to graph those.
+
+Because we have the y-value we want to specify, we will use `geom_col()`. We will come to modifying the scales to report percentages later. 
+
+```{r bar-percent}
+scores %>% 
+  group_by(`Board Type`) %>% 
+  summarize(count=n()) %>% 
+  mutate(percent=count/sum(count)) %>% 
+  ggplot(., aes(x=`Board Type`, y=percent))+geom_col()
+
+```
+
+
+## Boxplots
+
+Another type of graph that is used to visualize a variable is the `boxplot`. This contains a lot of statistical information.
+1. The thick line in the middle is the `median` value`. So half the values are above that line and half are below. 
+2. The outer thin lines are the `quartiles`. 25\% of the values lie on either side of the thick line. Combined, the two thin lines (e.g. the box are known as the `IQR` or the `interquartile rangew`.)
+3. The thin lines from the box to the outer edges are values that stretch from the 25\% (75\%) percentile to the `minimum` or the `maximum`.
+4. The dots are known as `outliers`, data points that are far away from the median.
+
+In this case, we know that the median value for the percentage of students meeting the provincial standard is just over 82\%. So, in half the schools in Ontario, at least 82\% of students are meeting the standards for grade 9 academic math and half the schools are below that. 
+
+```{r boxplot1}
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_boxplot()
+```
+
+# Two and More Variables
+
+Sometimes, however, we want to visualize relationships between *two* variables. Most of the graphs above can be easily extended to add a second variable. 
+
+### y - Variables
+
+For example, what if we want to look at the distribution of school math results by `board`. note that each individual value of grade 9 math is from a school; but schools are grouped into school boards. Some school boards are wealthier, some are poorer, some are rural, some are urban , some are Catholic, some are public. So we might want to look at the distribution of values by school board. 
+
+Let's put `Board Name` on the x-axis and the `percent_grade_9_academic_math` on the y-axis
+
+
+```{r boxplot3}
+  ggplot(scores, aes(x=`Board Name`, y=percent_grade_9_academic_math))+geom_boxplot()
+```
+
+That looks quite ugly because the baord names are unreadable. 
+
+One nice feature of `gggplot2` is that we can just quickly switch the x and y variables. 
+
+```{r boxplot4, fig.height=12, fig.width=8}
+ggplot(scores, aes(y=`Board Name`, x=percent_grade_9_academic_math))+geom_boxplot()
+```
+
+### Scatterplots
+
+Scatterplots are the most common way to visualize two numeric variables. 
+
+Here we can examine the correlation between the percent of students meeting the provincial standard for grade 9 math and the percent of students meeting the standard for literacy.
+
+```{r scatterplot1}
+scores %>% 
+  ggplot(., aes(x=percent_grade_9_academic_math, y=percent_grade_10_literacy_first_attempt))+geom_point()
+```
+
+The relationship between the two variables can be spelled out with a `geom_smooth()` which prints a line of best fit. The most basic way is to fit a straight line between the two variables. 
+
+```{r scatterplot2}
+scores %>% 
+  ggplot(., aes(x=percent_grade_9_academic_math, y=percent_grade_10_literacy_first_attempt))+geom_point()+geom_smooth(method="lm")
+```
+
+Another method is to fit something that is more curvy; a `loess` line only draws the line using a few points at a time, so it allows for curves.
+
+
+```{r scatterplot3}
+scores %>% 
+  ggplot(., aes(x=percent_grade_9_academic_math, y=percent_grade_10_literacy_first_attempt))+geom_point()+geom_smooth(method="loess")
+```
+
+### Aesthetics
+
+But in addition to adding a y-variable to a lot of the graphs above we can also vary the aesthetics of a graph with one variable to show a different variable. For instance, if we go back to a density plot of schools' grade 9 scores, we can show the difference between board type by specifying `fill=``Board Type```
+
+```{r fill}
+ggplot(scores, aes(x=percent_grade_9_academic_math, fill=`Board Type`))+geom_density()
+```
+
+Note that every geom has different aesthetics can be modified. For example, histograms and bar graphs and density plots can all have their fill or their color modified. 
+
+The best way to read what can be modified is to look at the help file for each `geom`. 
+
+```{r help-file, eval=F}
+?geom_density()
+```
+
+```{r img1, echo=F}
+
+include_graphics(path=here("Images/help_file.png"))
+```
+So here, we see that we can modify a density plot's `x`, `y`, `alpha`, `color`, `fill`, `gtroup`, `linetype`, `size` and `weight`. Play around with the different aesthetics. 
+
+
+```{r col}
+ggplot(scores, aes(x=percent_grade_9_academic_math, col=`Board Type`))+geom_density()
+```
+
+Note also that you can combine aesthetics to vary two things at once. So we can modify the `fill` and the `alpha` at the same time. Now you get not only a different color, but a different transparency as well. 
+
+
+```{r alpha}
+ggplot(scores, aes(x=percent_grade_9_academic_math, fill=`Board Type`, alpha=`Board Type`))+geom_density()
+
+
+```
+
+*Notice that when you map aesthetics to a variable's values the legend is automatically updated! *
+
+We can do this with the histogram: 
+
+```{r boxplot5}
+ggplot(scores, aes(x=percent_grade_9_academic_math, fill=`Board Type`, alpha=`Board Type`))+geom_histogram()
+```
+
+We can also do this with bar graphs. And there are a few ways to do this. The easiest way is just to show the counts of values in each group. 
+
+Here we show the number of schools in each board type and language group:
+
+```{r bar5}
+
+ggplot(scores, aes(x=`Board Type`, fill=`School Language`))+geom_bar()
+```
+
+However, this style of graph can be misleading, the eye is drawn to the top of the bar making it hard to grasp what proportion of the schools is in the two different groups. So we can put the bars side-by-side, like this:
+
+```{r bar6}
+ggplot(scores, aes(x=`Board Type`, fill=`School Language`))+geom_bar(position="dodge")
+```
+
+Sometimes we want to just show the pure distribution within groups:
+
+```{r bar7}
+ggplot(scores, aes(x=`Board Type`, fill=`School Language`))+geom_bar(position="fill")
+
+```
+
+note though that this shows something very specific. It shows the percentage of Public boards that are English and French and the percentage of Catholic board that are English and French. If we want to know what percentage of boards are English and Catholic, English and Public, French and Catholic and French and Public, then we need to calculate the percentages manually:
+
+Notice now that our percentages are of the *board type*, not the percentages of the total. 
+
+```{r bar8}
+scores %>% 
+  group_by(`Board Type`, `School Language`) %>% 
+  summarize(count=n()) %>% 
+  mutate(percent=count/sum(count)) 
+```
+
+If we look at the output of the code below, we get a clue to what is going on. The data.frame that is produced after this is grouped by `Board Type`. So, it's going to calculate the row's percentage of the groups formed by `Board Type`. We wanth the percentages of the *total*. 
+
+```{r bar9}
+scores %>% 
+  group_by(`Board Type`, `School Language`) %>% 
+  summarize(count=n())
+```
+
+We can `ungroup` the data frame: 
+```{r bar9a}
+scores %>% 
+  group_by(`Board Type`, `School Language`) %>% 
+  summarize(count=n()) %>% 
+  ungroup()
+```
+
+Now look at what happens when we calculate the percentage. 
+```{r bar10}
+scores %>% 
+  group_by(`Board Type`, `School Language`) %>% 
+  summarize(count=n()) %>% 
+  ungroup() %>% 
+  mutate(percent=count/sum(count)) 
+```
+
+Then we can graph it:
+
+```{r bar11}
+scores %>% 
+  group_by(`Board Type`, `School Language`) %>% 
+  summarize(count=n()) %>%  
+  ungroup() %>%  
+  mutate(percent=count/sum(count)) %>% 
+  ggplot(., aes(x=`Board Type`, y=percent, fill=`School Language`))+geom_col(position="dodge")
+```
+
+### Facets
+
+Another way that we can add another variable is with panels or `facets`. 
+
+There are two types of facets: `facet_wrap()` and `facet_grid()`
+
+This is a `wrap`
+```{r facets1}
+
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()+facet_wrap(vars(`Board Type`))
+```
+
+And this is a `grid`
+
+```{r facets2}
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()+facet_grid(vars(`Board Type`))
+
+```
+
+There are different things you can do with both. With `facet_wrap` you can specfiy how many rows and columns you want. 
+```{r facets3}
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()+facet_wrap(vars(`Board Type`), nrow=1)
+```
+
+```{r facets4}
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()+facet_wrap(vars(`Board Type`), nrow=2)
+```
+
+
+And in `facet_grid` you can specify a row and a column variable. 
+
+```{r facets6}
+
+ggplot(scores, aes(x=percent_grade_9_academic_math))+geom_histogram()+facet_grid(rows=vars(`Board Type`), cols=vars(`School Language`), scales='free')
+
+```
+
+
+
+#### Combining a pivot with facets
+
+Quite properly, a lot of our data are stored in separate columns. That is to say, the percent of students meeting the provincial standard in Grade 9 math is really a different measurement (i.e. variable) than the percent of students meeting the provincial standard for Grade 10 literacy. 
+
+However, if we wanted to show multiple variables in panels, then, in keeping with the grammar of `ggplot` we need to turn that wide data into long data. 
+
+Suppose we want to show each standard for 2020 in one graph, one panel for each standard. 
+
+What would we need to pivot down?
+
+```{r pivot1}
+names(scores)
+```
+
+```{r pivot2}
+scores %>% 
+  pivot_longer(., cols=starts_with('percent_grade'), names_to=c('Standard'), values_to=c("Percent")) %>% 
+  glimpse()
+```
+
+
+Now we can do a density plot *for each individual variable* using the same grammar and syntax as the density plot above!!!!
+
+```{r pivot3}
+scores %>% 
+  pivot_longer(., cols=starts_with('percent_grade'), names_to=c('Standard'), values_to=c("Percent")) %>% 
+ggplot(., aes(x=Percent))+geom_histogram()+facet_wrap(vars(Standard))
+```
+
+And we can add another grouping variable:
+
+```{r pivot4}
+scores %>% 
+  pivot_longer(., cols=starts_with('percent_grade'), names_to=c('Standard'), values_to=c("Percent")) %>% 
+ggplot(., aes(x=Percent))+geom_histogram()+facet_wrap(vars(Standard, `School Language`), nrow=2)
+```
+# Specialized Graphs
+
+There are some specialized graphs that are worth taking into account: 
+
+## Ridgeline or Joy Plots
+
+These basically density plots of a numeric variable by groupings of a categorical variable. They were first made famous for being the cover of Joy Division's famous album Unknown Pleasures. 
+
+```{r joy-plot, echo=F}
+include_graphics(path=here("Images/joy_division.jpeg"))
+```
+
+To create this, we need to load the library `ggridges`
+```{r ridgelines}
+#install.packages('ggridges')
+library(ggridges)
+scores %>% 
+  ggplot(., aes(x=percent_grade_9_academic_math, y=`Board Name`, fill=`Board Type` ))+geom_density_ridges()
+
+```
+
+## Cleveland Plots
+
+Cleveland plots look like this: 
+```{r cleveland1, echo=F}
+include_graphics(here("Images/cleveland_plot.png"))
+```
+
+It's really easy. It's basically just a bar graph but with `geom_point()` instead of `geom_bar()`
+
+Suppose we want to show the average number of students meeting the provincial standards for grade 9 math by school board.
+
+```{r cleveland2}
+scores %>% 
+  group_by(`Board Name`) %>% 
+  summarize(Average=mean(percent_grade_9_academic_math, na.rm=T)) 
+  
+```
+
+```{r cleveland4}
+scores %>% 
+  group_by(`Board Name`) %>% 
+  summarize(Average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  ggplot(., aes(y=`Board Name`, x=Average))+geom_point()
+```
+
+And we can connect them with lines, if we want, through `geom_segment`. For this we need to specify where the line should end on the y-axis and on the x-axis.
+
+```{r cleveland4a}
+scores %>% 
+  group_by(`Board Name`) %>% 
+  summarize(Average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  ggplot(., aes(y=`Board Name`, x=Average))+geom_point()+geom_segment(aes(yend=`Board Name`), xend=0)
+```
+
+They are desired because they are useful in showing changes in values by categories. 
+
+Notice that we actually have the change in scores. So, we could actually combine the percent of students meeting the standards with the corresponding `delta` variable and we would have the percent of students meeting the standard from three years ago, right?
+
+```{r cleveland5}
+#Start with the data frame
+  scores %>% 
+  #Form groups for averages by board
+  group_by(`Board Name`) %>% 
+  #Get 2020 average and average change from 2017
+  summarize(`2020`=mean(percent_grade_9_academic_math, na.rm=T), delta=mean(delta_grade_9_academic_math, na.rm=T)) %>% 
+  #Subtract the delta from the 2020 average to get the 2017
+    mutate(`2017`=`2020`-delta) %>% 
+  #Pivot 2020 and 2017 down
+  #Name one column Year and one Average
+    pivot_longer(cols=c(`2020`, `2017`), names_to=c("Year"), values_to=c("Average")) %>% 
+  #Plot x= Average, y=Board Name
+  ggplot(., aes(x=Average, y=`Board Name`))+
+  #Distinguish points by year with color
+  geom_point(aes(col=Year))+
+  #Add the lines
+  geom_line(aes(group=`Board Name`))
+```
+
+One really cool thing we could do is to order the school boards by the size of the delta.
+```{r cleveland6, fig.height=12, fig.width=8}
+#Start with the data frame
+  scores %>% 
+  #Form groups for averages by board
+  group_by(`Board Name`) %>% 
+  #Get 2020 average and average change from 2017
+  summarize(`2020`=mean(percent_grade_9_academic_math, na.rm=T), delta=mean(delta_grade_9_academic_math, na.rm=T)) %>% 
+  #Subtract the delta from the 2020 average to get the 2017
+    mutate(`2017`=`2020`-delta) %>% 
+  #Pivot 2020 and 2017 down
+  #Name one column Year and one Average
+    pivot_longer(cols=c(`2020`, `2017`), names_to=c("Year"), values_to=c("Average")) %>% 
+  #Plot x= Average, y=Board Name
+  ggplot(., aes(x=Average, y=fct_reorder(`Board Name`, delta, .desc=T)))+
+  #Distinguish points by year with color
+  geom_point(aes(col=Year))+
+  #Add the lines
+  geom_line(aes(group=`Board Name`))
+```
+
+# Advanced Customization
+
+## Reducing Categories and Changing Text
+A lot of times that we want to change the text on category labels. We might want to do this to eliminate some fringe categories or we might want to make labels more readable.  
+
+For example, we showed this graph of the number of schools in each type of school board. 
+
+```{r labels1}
+ggplot(scores, aes(x=`Board Type`))+geom_bar()
+```
+
+We can rotate it to make the labels more readable:
+```{r labels2}
+ggplot(scores, aes(y=`Board Type`))+geom_bar()
+```
+
+That goes a long way, but honestly, most people are not going to be interested in whatever school is the `Provincial/Hospital`. Moreover, we somehow have one entry that has the value of `Public School Board` and the `Public School Board E/F` category. And we have this odd separate `Prot Sep Sch Brd` category. 
+
+We can really simplify a lot of our graphs and labels by changing these. 
+
+Let's do a few things:
+
+1. Filter out the `Provincial Hospital`
+2. Change the names of the major categories to just `Catholic` and `Public`.
+
+```{r check-table}
+table(scores$`Board Type`)
+```
+
+```{r recode}
+library(car)
+scores %>% 
+  mutate(Board=Recode(`Board Type`, "'Cath Dist Sch Brd (E/F)'='Separate';
+                      'Pub Dist Sch Brd (E/F)'='Public';"))->scores
+```
+Now we can check again:
+
+```{r check2}
+table(scores$Board)
+```
+```{r labels3}
+ggplot(scores, aes(y=`Board`))+geom_bar()
+
+```
+
+## Mapping Versus Setting 
+
+We often want to modify the colors of graphs for a lot of reasons, sometimes it is as simple as complying with a media company's color palette. For example, the Toronto Star is a heavily blue branded outlet; while the Globe and Mail heavily emphasizes red. 
+
+There are key things to note when changing visual aesthetics of a graph: there is a mapping and a setting. 
+
+In the following graph, the color of the points is just *set* to black.
+```{r mapping1}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math))+geom_point()
+```
+
+We might want to *set* the colors of these points to be something, or we might want to set the size of the points, just to better fit the medium in which we are publishing. 
+
+We can do this straightforwardly inside the `geom_point()`
+
+```{r mapping2}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+  ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math))+geom_point(color="red")
+```
+
+The very best list of R colors available for use is [here](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). 
+
+We might also want to set the size, or the shape of the points. 
+
+```{r mapping3}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+  ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math))+geom_point(color="red", size=5, shape=3)
+```
+
+You can find the list of point shapes available [here](http://www.sthda.com/english/wiki/ggplot2-point-shapes). 
+
+We can also set the `fill` of some point shapes, but not all. There is no substitute for playing around. 
+
+```{r mapping4}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+  ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math))+geom_point(color="red", fill="blue", shape=23)
+```
+
+However, changing the appearance of visual aesthetics which have been mapped to a category is a different process. 
+Here, the colors are not *set*, they are *mapped* to the categories of the the board: 
+
+```{r mapping5}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=`Board`))+geom_point()
+```
+
+Suppose we want to use a different set of colors to be used for the mapping, like, let's say, red and green.
+
+To do so, we need to introduce a series of functions that have the same type of structure. These are: 
+
+`scale_col_discrete()`
+`scale_col_continuous()`
+`scale_fill_discrete()`
+`scale_fill_continuous`
+`scale_size_discrete()`
+`scale_size_continuous`
+
+In order to make this work, we need to know what type of aesthetic we need to modify (e.g. the color, the fill, the size, the shape) and what type of variable is the mapping variable. 
+
+In this case, we have mapped the `colors` to a `discrete` variable, which is another name for categorical variables. So we use `scale_color_discrete`
+
+```{r mapping6}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=`Board`))+geom_point()+scale_color_discrete(type=c("darkgreen", "gold"))
+
+```
+
+Note that you can also reverse the colors to specifically link a color to level
+```{r mapping7}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=`Board`))+geom_point()+scale_color_discrete(type=c("gold" , "darkgreen"))
+
+```
+
+Some scales can be mapped to numeric or continuous variables, while other can only be mapped to continuous variables. 
+
+For example, we can also map the color of the points not to the `Board Type` which is a categorical variable, but to the percentage of parents in the board who do not have degrees.
+
+This is the default:
+
+```{r mapping8}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=percent_kids_low_income))+geom_point()
+
+
+```
+
+And we can modify this with `scale_col_gradient`
+```{r mapping9}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=percent_kids_low_income))+geom_point()+scale_color_gradient(low="darkred", high="lightpink")
+
+
+```
+
+```{r mapping10}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=percent_kids_low_income))+geom_point()+scale_color_gradient(low="darkgreen", high="gold")
+
+
+```
+
+### Picking Palettes
+There are also a series of R packges that let us pick pre-built palettes of colors. One of the best is the [`RColorbrewer`](https://www.r-graph-gallery.com/38-rcolorbrewers-palettes.html) package
+
+When we are mapping a color palette to a categorica variable, like we are here with `School Language`,  and we provide the `type` argument (either `seq`, `qualitative`, or `diverging`) and then pick the palette. 
+
+```{r palettes1}
+#install if necessary
+#install.packages('RColorBrewer')
+library(RColorBrewer)
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=`School Language`))+geom_point()+scale_color_brewer(type="seq", palette="Greens")
+
+
+```
+
+But we can also map the color to a continuous (numeric) variable using the Brewer palettes using the `scale_color_distill()`
+
+
+```{r palettes2}
+
+scores %>% 
+  filter(!is.na(Board)) %>% 
+ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math, col=percent_kids_low_income))+geom_point()+scale_color_distiller(type="seq", palette="Reds")
+
+
+```
+
+
+
+
+## Text
+
+Often we want to add text to graphs in order to make it clear which values the graph is representing. To do this we use the `geom_text()` function. It basically represents another layer in the plot. 
+
+Let's make the percent plot of schools again:
+
+Here are the schools by school board data again.
+
+```{r text1}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+  group_by(Board) %>% 
+  summarize(count=n()) %>% 
+  ggplot(., aes(x=Board, y=count))+geom_col()+geom_text(aes(label=count), vjust=-0.5)
+
+```
+
+```{r text2}
+scores %>% 
+  filter(!is.na(Board)) %>% 
+group_by(Board, `School Language`) %>% 
+  summarize(count=n()) %>% 
+  ungroup() %>% 
+  mutate(percent=count/sum(count)) %>% 
+  ggplot(., aes(x=Board, y=percent, fill=`School Language`, group=`School Language`))+geom_col(position="dodge")+geom_text(aes(label=round(percent*100, 2)), position=position_dodge(0.9)) 
+
+
+```
+
+
+## Factor Orders
+
+Often we want to change the order of categories for categorical variables in order to communicate some information. Here is the graph that shows the average rate of students meeting the provincial grade 9 standards for math by school board. 
+
+
+```{r factor1}
+
+scores %>% 
+  group_by(`Board Type`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  ggplot(., aes(y=`Board Name`, x=average, fill=`Board Type`))+geom_col()
+```
+
+This is the code that produces the averages:
+
+```{r factor2}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) 
+```
+
+It would be nice to order the names of the school boards so that the ones with the highest levels are at the top. Here we return to `fct_reorder` which is changes the order of the levels of its main argument by the values in its second argument. 
+
+
+```{r factor3}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  ggplot(., aes(y=fct_reorder(`Board Name`, average), x=average, fill=`Board`))+geom_col()
+
+
+```
+
+We can reverse the orders like this, by adding `.desc=T`.
+
+```{r factor4}
+scores %>% 
+  group_by(`Board Type`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board Type`))+geom_col()
+```
+We can refine this further by eliminating those boards with missing values.
+
+```{r factor5}
+scores %>% 
+  group_by(`Board Type`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board Type`))+geom_col()
+```
+
+
+Now we could pick a more attractive set of colors from the `Brewer` package. 
+```{r factor6}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")
+```
+
+## Axis and Graph Labels
+
+Notice now however that the y-axis labels are kind of ....not very nice. The `labs()` layer is very easy to modify.
+
+```{r axis-labels1}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")
+```
+
+We can also wrap a long title onto two lines using the `str_wrap()` function which comes from the `stringr` library
+
+```{r axis-labels2}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))
+```
+## Themes
+
+The overall look of the graph, for lack of a better word is controlled by the `theme` function. 
+
+There are a series of built-in themes you can set to the graph to change the look. They are stored in the `ggtheme` package.
+
+```{r theme1}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+theme_grey()
+```
+
+`Theme_bw()`
+```{r theme2}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+theme_bw()
+```
+
+```{r theme3}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+theme_light()
+```
+
+```{r theme4}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+theme_minimal()
+```
+
+But there are a ton of themes out there that come pre-built in the [`ggthemes`](https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/) package.
+
+```{r theme5}
+#instal if necessary
+#install.packages('ggthemes')
+library(ggthemes)
+```
+
+```{r theme6}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+theme_economist()
+```
+
+And the Wall Street Journal....
+
+```{r theme7}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+theme_wsj()
+```
+
+And the Globe and Mail!!! Althought, perhaps not surprisingly, this does not work as well. 
+
+
+```{r tgam}
+#install if necessary
+#install.packages('tgamtheme')
+library(tgamtheme)
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_tgam()
+```
+
+## Axis Text Font and Size
+We can also modify the size of the text on the axes. 
+
+Here we need to understand the `theme()` layer. `theme()` can accept arguments at a very high level of generality, right down to extremely specific. 
+
+So, for example, we can change the font family, the size and the color of all the text in the graph. 
+
+```{r axis1}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))+theme(text=element_text(size=14, color="red", family="Times New Roman"))
+
+```
+
+But we can get more specific, maybe we only want to set the title to be a different color, like dark green, to fit the bars better. 
+
+```{r axis2}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))+theme(text=element_text(family="Times New Roman"), plot.title=element_text(color="darkgreen"))
+
+```
+Notice though that the axis tick labels are untouched. Here we can change those by modifying `axis.text`. Let's make them smaller. 
+
+
+```{r axis3}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))+theme(text=element_text(family="Times New Roman"), plot.title=element_text(color="darkgreen"), axis.text=element_text(size=5))
+```
+
+But we can also only modify the size of each axis separately. 
+```{r axis4}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))+theme(text=element_text(family="Times New Roman"), plot.title=element_text(color="darkgreen"), axis.text=element_text(size=5))
+
+```
+
+We can also rotate the angle of the axis text labels and change the color.
+
+
+```{r axis5}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title=str_wrap("Percent of Students Meeting Academic Math Standards in Grade 9", 25))+theme(text=element_text(family="Times New Roman"), plot.title=element_text(color="darkgreen"), axis.text.y=element_text(size=5), axis.text.x=element_text(size=12, angle=45))
+
+```
+
+We can also use `theme()` to modify the colors of the backgtrounds and the size of the grid lines. Sometimes we want them, sometimes we don't. 
+
+This version of our graph was looking the best, I think.  but let's set the background to be blank. 
+
+
+
+```{r background1}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme(plot.title=element_text(color="darkgreen"), axis.text.y=element_text(size=5),panel.background=element_blank())
+```
+
+But we may want to add some thicker grid lines. 
+
+```{r background2}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme(plot.title=element_text(color="darkgreen"), axis.text.y=element_text(size=5),panel.background=element_rect(fill='white'), panel.grid.major = element_line(colour="black"))
+```
+That doesn't look so good, really we only want the x-axis lines to facilitate people being able to estimate the number.  Plust, instead of filling the panel background with white, let's just delete it altogether. To do that, we can change `panel.background` to `element_blank()`. This let's us set the panel grid lines on top. 
+```{r background3}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme(plot.title=element_text(color="darkgreen"), axis.text.y=element_text(size=5),panel.background=element_blank(), panel.grid.major.x = element_line(colour="darkgray", linetype=2, size=0.5), panel.ontop = T)
+```
+
+## Legend 
+
+Sometimes we want to move the legend around. 
+
+```{r background4}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme(plot.title=element_text(color="darkgreen"), axis.text.y=element_text(size=5),panel.background=element_blank(), panel.grid.major.x = element_line(colour="darkgray", linetype=2, size=0.5), panel.ontop = T, legend.position="bottom")
+```
+
+
+
+## Customizing Themes
+
+You can modify all these parts graph by graph, or you can go further and actually customize your theme.  
+
+Let's start by storing the regular theme 
+
+
+```{r custom-theme1}
+theme_mine<-function() {
+  theme(
+  panel.background=element_rect(fill="darkred")
+)}
+```
+
+Let's check to see if that works:
+
+```{r custom-theme2}
+scores %>% 
+  ggplot(., aes(x=percent_parents_no_degree, y=percent_grade_9_academic_math))+geom_point()+theme_mine()
+
+```
+
+Let's pick a font family:
+
+
+```{r custom-theme3}
+theme_mine<-function() {
+  theme(
+    text=element_text(family="mono"),
+  panel.background=element_blank(),
+  panel.ontop = T,
+  panel.grid.major.x = element_line(color="lightgray", linetype=2),
+  plot.title=element_text(color="darkgreen")
+  )
+}
+
+```
+
+And let's redraw the plot again:
+
+```{r custom-theme4}
+scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme_mine()
+```
+
+
+
+# Interactvitiy
+It is often fun to add (and useful to add interactivity to graphs. In this case where there is a lot of information, we might want to highlight or expand). To do this we can use the [`plotly`](https://plotly-r.com/index.html) library. 
+
+To make it work, we need to save our graph in an object, here, `myplot`.
+
+```{r plotly1}
+#Install if necessary 
+#install.packages('plotly')
+library(plotly)
+myplot<-scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, average, .desc=T), x=average, fill=`Board`, text=`Board Name`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme_mine()
+
+
+```
+
+Then we just wrap the plot in the command `ggplotly`
+
+```{r plotly2}
+ggplotly(myplot)
+```
+
+By default the `tooltip` displays all of the aesthetics that have been used to make the graph, here the `x`, `y`, and `fill` aesthetics. 
+
+But notice that we have this ugly `fct_reorder` bit for the board name. That's because that's how we defined the `y` variable in the `ggplot` command. we can customize this pretty easily.
+First, let's add a `label` aesthetic using the original `Board Name` variable. 
+
+Then, we can suppress the `y` aesthetic. And while we're at it, let's go through and change `average` to `Average` to make it look nicer. 
+
+```{r plotly3}
+
+myplot<-scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(Average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(Average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, Average, .desc=T), x=Average, fill=`Board`, label=`Board Name`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme_mine()
+ggplotly(myplot, tooltip=c("label", "x"))
+
+```
+
+Now we could actually suppress the confusing and hard to read board names on the y-axis. 
+
+
+```{r plotly4}
+
+myplot<-scores %>% 
+  group_by(`Board`, `Board Name`) %>% 
+  summarize(Average=mean(percent_grade_9_academic_math, na.rm=T)) %>% 
+  filter(!is.na(Average)) %>% 
+    ggplot(., aes(y=fct_reorder(`Board Name`, Average, .desc=T), x=Average, fill=`Board`, label=`Board Name`))+geom_col()+scale_fill_brewer(type="qualitative", palette="Greens")+geom_col()+labs(x="Average", y="School Board", title="Percent of Students Meeting Academic Math Standards in Grade 9")+theme_mine()+theme(axis.text.y=element_blank(), axis.ticks.y=element_blank())
+ggplotly(myplot, tooltip=c("label", "x"))
+
+```
+
+
