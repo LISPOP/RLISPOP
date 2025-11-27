@@ -695,7 +695,7 @@ In this case, we have mapped the `colors` to a `discrete` variable, which is ano
 
 ```{r mapping6}
 shs_subset %>% 
-ggplot(., aes(x=Income, y=Taxes, col=Dwelling))+geom_point()scale_color_discrete(type=c("darkgreen", "gold", "lightgreen"))
+ggplot(., aes(x=Income, y=Taxes, col=Dwelling))+geom_point()+scale_color_discrete(type=c("darkgreen", "gold", "lightgreen"))
 
 ```
 
@@ -828,9 +828,7 @@ There are also additional themes stored in the `ggtheme` package.
 For example, this is the `theme_grey()`. It automatically turns everything to shades of grey.
 
 ```{r theme1}
-average_incomes %>% 
-  #fct_reorder reorders the levels ofthe factor variable by the values of the second numeric variable
-  ggplot(., aes(y=fct_reorder(Province, Average_Income), x=Average_Income))+geom_col()+labs(x="Average Household Income", y="Province", title="Average Total Household Income By Province")+theme_grey()
+
 ```
 
 `Theme_bw()`
